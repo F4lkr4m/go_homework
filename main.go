@@ -1,9 +1,12 @@
-package go_homework
+package main
 
-import "fmt"
+import (
+	"go_homework/calc"
+)
 
 func main() {
-	fmt.Println("Hello world!");
+	calc := calc.Calc{}
+	calc.Solve("1.121213 + 3.25")
 
 	return
 }
