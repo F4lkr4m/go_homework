@@ -2,6 +2,7 @@ package calc
 
 import (
 	"github.com/stretchr/testify/require"
+	"math"
 	"testing"
 )
 
@@ -12,7 +13,7 @@ var sumTests = []struct {
 	{"1 + 3", 4},
 	{"1 + 7", 8},
 	{"1.5 + 3.5", 5.0},
-	{"1.3 + 2.3", 3.6},
+	{"1.4 + 2.3", 3.7},
 	{"1000000 + 1", 1000001},
 }
 
@@ -23,7 +24,7 @@ var subtractionTests = []struct {
 	{"1 - 3", -2},
 	{"1 - 7", -6},
 	{"3.5 - 1.5", 2.0},
-	{"1.3 - 2.3", -1.0},
+	{"1.5 - 1.5", 0},
 	{"1000000 - 1", 999999},
 }
 
@@ -65,7 +66,10 @@ func TestElementaryOperations(t *testing.T) {
 				if err != nil {
 					t.Errorf("Something went wrong, error in solving elementary operations.")
 				}
-				require.Equal(t, tt.out, val, "Two numbers should be the same.")
+				tolerance := 0.001
+				if diff := math.Abs(val - tt.out); diff > tolerance {
+					t.Errorf("Something went wrong, error in solving elementary operations.")
+				}
 			})
 		}
 	}
@@ -99,7 +103,7 @@ var errorTests = []struct {
 	out string
 } {
 	{"1 + 3 + (4 * (3 + (4 / 1))", "Parsing expression error"},
-	{"1.2 + 3 + (4 * (3 + (4 / 1)))", "Parsing expression error"},
+	{"1.2 + 3 + (4 * (3 + (4 / 1))))", "Parsing expression error"},
 	{"Hello there", "Parsing expression error"},
 	{"1 + 3 + (4 * (3 + (4 / 0)))", "Zero division"},
 	{"1 + 3 + (4 * (3 + (4 / (1 - 1))))", "Zero division"},

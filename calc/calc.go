@@ -23,19 +23,8 @@ func (calc *Calc) Solve(input string) (result float64, err error) {
 	fmt.Println(splittedInput)
 	polishExpression := convertToPolishSystem(splittedInput)
 	fmt.Println(polishExpression)
-	fmt.Println(calc.countPolishSystem(polishExpression))
 
-	//for _, val := range splittedInput {
-	//
-	//	if s, err := strconv.ParseFloat(val, 64); err == nil {
-	//		fmt.Println(s) // 3.14159265
-	//	} else {
-	//		fmt.Println("Here we got an action")
-	//	}
-	//}
-
-
-	return
+	return calc.countPolishSystem(polishExpression), nil
 }
 
 func splitToOperands(input string) (output []string) {
@@ -61,6 +50,11 @@ func getNextOperand(input string, position int) (output string, increment int) {
 
 	// if sign is number
 	for i := position; i < len(input) && !strings.ContainsAny("()+-/*", string(input[i])); i++ {
+		if input[i] == ',' {
+			output += string('.')
+			continue
+		}
+
 		output += string(input[i])
 	}
 
@@ -77,15 +71,13 @@ func reverseSlice(input []string) []string {
 func convertToPolishSystem(input []string) (output []string) {
 	operatorStack := make([]string, 0)
 
-	var priority = map[string]int{"*": 2, "/": 2, "-": 1, "+": 1, "(": 4, ")": 4}
+	var priority = map[string]int{"*": 2, "/": 2, "-": 1, "+": 1, "(": 0, ")": 0}
 
 	for i := 0; i < len(input); i++ {
 		sign := input[i]
-
 		if strings.ContainsAny("+-*/", string(sign)) {
 			j := len(operatorStack) - 1
-			for ; j > 0 && (priority[operatorStack[j]] >= priority[sign]) &&
-				(operatorStack[j] != string("(")) && (operatorStack[j] != string(")")); j-- {
+			for ; j >= 0 && (priority[operatorStack[j]] >= priority[sign]); j-- {
 				var dropSign string
 				operatorStack, dropSign = operatorStack[:len(operatorStack)-1], operatorStack[len(operatorStack)-1]
 				output = append(output, dropSign)
@@ -144,6 +136,8 @@ func (calc *Calc) countPolishSystem(input []string) (result float64) {
 		} else {
 			if s, err := strconv.ParseFloat(sign, 64); err == nil {
 				numberStack = append(numberStack, s)
+			} else {
+				panic("Parsing expression error")
 			}
 		}
 	}
