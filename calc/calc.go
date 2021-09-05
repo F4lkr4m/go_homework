@@ -20,14 +20,19 @@ func (calc *Calc) Solve(input string) (result float64, err error) {
 
 	input = strings.Replace(input, " ", "", -1)
 	splittedInput := splitToOperands(input)
-	for _, val := range splittedInput {
+	fmt.Println(splittedInput)
+	polishExpression := convertToPolishSystem(splittedInput)
+	fmt.Println(polishExpression)
+	fmt.Println(calc.countPolishSystem(polishExpression))
 
-		if s, err := strconv.ParseFloat(val, 64); err == nil {
-			fmt.Println(s) // 3.14159265
-		} else {
-			fmt.Println("Here we got an action")
-		}
-	}
+	//for _, val := range splittedInput {
+	//
+	//	if s, err := strconv.ParseFloat(val, 64); err == nil {
+	//		fmt.Println(s) // 3.14159265
+	//	} else {
+	//		fmt.Println("Here we got an action")
+	//	}
+	//}
 
 
 	return
@@ -39,8 +44,6 @@ func splitToOperands(input string) (output []string) {
 		output = append(output, sign)
 		i += increment
 	}
-
-
 
 	return output
 }
@@ -64,7 +67,86 @@ func getNextOperand(input string, position int) (output string, increment int) {
 	return output, len(output)
 }
 
-func convertToPolishSystem(input []string) (result []string, err error) {
+func reverseSlice(input []string) []string {
+	for left, right := 0, len(input)-1; left < right; left, right = left+1, right-1 {
+		input[left], input[right] = input[right], input[left]
+	}
+	return input
+}
 
-	return
+func convertToPolishSystem(input []string) (output []string) {
+	operatorStack := make([]string, 0)
+
+	var priority = map[string]int{"*": 2, "/": 2, "-": 1, "+": 1, "(": 4, ")": 4}
+
+	for i := 0; i < len(input); i++ {
+		sign := input[i]
+
+		if strings.ContainsAny("+-*/", string(sign)) {
+			j := len(operatorStack) - 1
+			for ; j > 0 && (priority[operatorStack[j]] >= priority[sign]) &&
+				(operatorStack[j] != string("(")) && (operatorStack[j] != string(")")); j-- {
+				var dropSign string
+				operatorStack, dropSign = operatorStack[:len(operatorStack)-1], operatorStack[len(operatorStack)-1]
+				output = append(output, dropSign)
+			}
+			operatorStack = append(operatorStack, sign)
+		} else if string(sign) == "(" {
+			operatorStack = append(operatorStack, sign)
+		} else if string(sign) == ")" {
+			j := len(operatorStack) - 1
+			for ; j > -1 && operatorStack[j] != "("; j-- {
+				var dropSign string
+				operatorStack, dropSign = operatorStack[:len(operatorStack)-1], operatorStack[len(operatorStack)-1]
+				output = append(output, dropSign)
+			}
+
+			if len(operatorStack) == 0 {
+				panic("Parsing expression error")
+			} else {
+				operatorStack = operatorStack[:len(operatorStack)-1]
+			}
+		} else {
+			output = append(output, sign)
+		}
+	}
+	operatorStack = reverseSlice(operatorStack)
+	output = append(output, operatorStack...)
+
+	return output
+}
+
+func (calc *Calc) countPolishSystem(input []string) (result float64) {
+	numberStack := make([]float64, 0)
+
+	for i := 0; i < len(input); i++ {
+		sign := input[i]
+
+		if strings.ContainsAny("()+-/*", string(sign)) {
+			var val1 float64
+			numberStack, val1 = numberStack[:len(numberStack)-1], numberStack[len(numberStack)-1]
+			if len(numberStack) == 0 {
+				panic("Parsing expression error")
+			}
+			switch sign {
+			case "+":
+				numberStack[len(numberStack)-1] = val1 + numberStack[len(numberStack)-1]
+			case "-":
+				numberStack[len(numberStack)-1] = numberStack[len(numberStack)-1] - val1
+			case "*":
+				numberStack[len(numberStack)-1] = val1 * numberStack[len(numberStack)-1]
+			case "/":
+				if val1 == 0 {
+					panic("Zero division")
+				}
+				numberStack[len(numberStack)-1] = numberStack[len(numberStack)-1] / val1
+			}
+		} else {
+			if s, err := strconv.ParseFloat(sign, 64); err == nil {
+				numberStack = append(numberStack, s)
+			}
+		}
+	}
+	result = numberStack[0]
+	return result
 }
