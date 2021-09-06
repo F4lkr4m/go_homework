@@ -7,31 +7,34 @@ import (
 )
 
 var sumTests = []struct {
-	in string
+	in  string
 	out float64
-} {
+}{
 	{"1 + 3", 4},
 	{"1 + 7", 8},
 	{"1.5 + 3.5", 5.0},
 	{"1.4 + 2.3", 3.7},
 	{"1000000 + 1", 1000001},
+	{"+3 + 4", 7},
+	{"+3,25 + 4", 7.25},
 }
 
 var subtractionTests = []struct {
-	in string
+	in  string
 	out float64
-} {
+}{
 	{"1 - 3", -2},
 	{"1 - 7", -6},
 	{"3.5 - 1.5", 2.0},
 	{"1.5 - 1.5", 0},
 	{"1000000 - 1", 999999},
+	{"- 3 - 1", -4},
 }
 
 var divTests = []struct {
-	in string
+	in  string
 	out float64
-} {
+}{
 	{"4 / 2", 2},
 	{"9 / 3", 3},
 	{"10 / 5", 2.0},
@@ -39,18 +42,19 @@ var divTests = []struct {
 }
 
 var mulTests = []struct {
-	in string
+	in  string
 	out float64
-} {
+}{
 	{"1 * 3", 3},
 	{"2 * 7", 14},
 	{"1.5 * 3.5", 5.25},
 	{"9999 * 999", 9989001},
 }
 
-var tests = [][]struct{
-	in string
-	out float64} {
+var tests = [][]struct {
+	in  string
+	out float64
+}{
 	sumTests,
 	subtractionTests,
 	divTests,
@@ -66,9 +70,9 @@ func TestElementaryOperations(t *testing.T) {
 				if err != nil {
 					t.Errorf("Something went wrong, error in solving elementary operations.")
 				}
-				tolerance := 0.001
+				tolerance := 1e-15
 				if diff := math.Abs(val - tt.out); diff > tolerance {
-					t.Errorf("Something went wrong, error in solving elementary operations.")
+					t.Errorf("Something went wrong, error in solving elementary operations\nExpected: %f\nGot: %f", tt.out, val)
 				}
 			})
 		}
@@ -76,9 +80,9 @@ func TestElementaryOperations(t *testing.T) {
 }
 
 var hardTests = []struct {
-	in string
+	in  string
 	out float64
-} {
+}{
 	{"1 + 3 + (4 * (3 + (4 / 4)))", 20},
 	{"1 - 4 * (3 + 4)", -27},
 	{"2 * (3 + 4 * 4 * 5 * 5) * 3", 2418},
@@ -99,16 +103,17 @@ func TestHardOperations(t *testing.T) {
 }
 
 var errorTests = []struct {
-	in string
+	in  string
 	out string
-} {
+}{
 	{"1 + 3 + (4 * (3 + (4 / 1))", "Parsing expression error"},
 	{"1.2 + 3 + (4 * (3 + (4 / 1))))", "Parsing expression error"},
 	{"Hello there", "Parsing expression error"},
 	{"1 + 3 + (4 * (3 + (4 / 0)))", "Zero division"},
 	{"1 + 3 + (4 * (3 + (4 / (1 - 1))))", "Zero division"},
+	{"* 3", "Parsing expression error"},
+	{"/ 3", "Parsing expression error"},
 }
-
 
 func TestErrorInput(t *testing.T) {
 	calc := Calc{}
