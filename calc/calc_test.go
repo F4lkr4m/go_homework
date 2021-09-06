@@ -109,10 +109,10 @@ var errorTests = []struct {
 	{"1 + 3 + (4 * (3 + (4 / 1))", "Parsing expression error"},
 	{"1.2 + 3 + (4 * (3 + (4 / 1))))", "Parsing expression error"},
 	{"Hello there", "Parsing expression error"},
-	{"1 + 3 + (4 * (3 + (4 / 0)))", "Zero division"},
-	{"1 + 3 + (4 * (3 + (4 / (1 - 1))))", "Zero division"},
 	{"* 3", "Parsing expression error"},
 	{"/ 3", "Parsing expression error"},
+	{"1 + 3 + (4 * (3 + (4 / 0)))", "Zero division"},
+	{"1 + 3 + (4 * (3 + (4 / (1 - 1))))", "Zero division"},
 }
 
 func TestErrorInput(t *testing.T) {
