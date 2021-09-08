@@ -1,17 +1,23 @@
 package uniq
 
-type mode int
+type Mode int
 
 const (
-	c mode = iota
-	d
-	u
+	None Mode = iota
+	C
+	D
+	U
 )
 
-type Options struct {
-	i bool  // no case-sensitive
+const FileNum = 2
 
-	workMode mode
-	sChars int
-	fFields int
+type Options struct {
+	I bool  // no case-sensitive
+
+	WorkMode Mode
+	SChars int
+	FFields int
+
+	InputFilename string
+	OutputFilename string
 }
