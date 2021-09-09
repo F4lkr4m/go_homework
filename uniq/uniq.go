@@ -1,7 +1,6 @@
 package uniq
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -28,51 +27,42 @@ type Options struct {
 	OutputFilename string
 }
 
-func FormatLinesWithOptions(lines []string, i bool, SChars int, FFields int) (out []string) {
-	Outer:
-		for _, line := range lines {
-			formattedLine := line
+func formatLineWithOptions(line string, opt Options) (out string){
+	formattedLine := line
 
-			for i := 0; i < FFields; i++ {
-				if index := strings.IndexByte(line, ' '); index == -1 {
-					formattedLine = ""
-					out = append(out, "")
-					continue Outer
-				} else {
-					formattedLine = line[index:]
-				}
-			}
-
-			if len(formattedLine) > SChars {
-				formattedLine = formattedLine[SChars:]
-			} else {
-				formattedLine = ""
-				out = append(out, "")
-				continue Outer
-			}
-
-			if i {
-				formattedLine = strings.ToLower(formattedLine)
-			}
-
-			out = append(out, formattedLine)
+	for i := 0; i < opt.FFields; i++ {
+		if index := strings.IndexByte(line, ' '); index == -1 {
+			out = ""
+			return
+		} else {
+			formattedLine = line[index:]
 		}
-	return out
+	}
+
+	if len(formattedLine) > opt.SChars {
+		formattedLine = formattedLine[opt.SChars:]
+	} else {
+		out = ""
+		return
+	}
+
+	if opt.I {
+		formattedLine = strings.ToLower(formattedLine)
+	}
+
+	out = formattedLine
+	return
 }
 
-func standardLogic(lines []string, formattedLines []string) (out []string){
+func standardLogic(lines []string, opt Options) (out []string){
 	// just add the first one line
 	out = append(out, lines[0])
 
 	// check other lines
-	for i := 1; i < len(lines) - 1; i++ {
-		if formattedLines[i] != formattedLines[i - 1] {
+	for i := 1; i < len(lines); i++ {
+		if formatLineWithOptions(lines[i], opt) != formatLineWithOptions(lines[i - 1], opt)  {
 			out = append(out, lines[i])
 		}
-	}
-
-	if formattedLines[len(lines) - 1] != formattedLines[len(lines) - 2] {
-		out = append(out, lines[len(lines) - 1])
 	}
 
 	return out
@@ -84,29 +74,21 @@ type lineWithCounter struct {
 
 }
 
-func countingLogic(lines []string, formattedLines []string) (out []string) {
+func countingLogic(lines []string, opt Options) (out []string) {
 
 	// just add the first one line
 	var countedLines []lineWithCounter
 
-	var counter int
+	countedLines = append(countedLines, lineWithCounter{lines[0], 1})
 
 	// check other lines
-	for i := 1; i < len(lines) - 1; i++ {
-		if formattedLines[i - 1] != formattedLines[i] {
-			countedLines = append(countedLines, lineWithCounter{lines[i], counter})
-			counter = 1
+	for i := 1; i < len(lines); i++ {
+		if formatLineWithOptions(lines[i], opt) == formatLineWithOptions(countedLines[len(countedLines) - 1].line, opt) {
+			countedLines[len(countedLines) - 1].number++
 		} else {
-			counter++
+			countedLines = append(countedLines, lineWithCounter{lines[i], 1})
 		}
 	}
-
-	if formattedLines[len(lines) - 1] != formattedLines[len(lines) - 2] {
-		out = append(out, lines[len(lines) - 1])
-		countedLines = append(countedLines, lineWithCounter{lines[len(lines) - 1], counter})
-	}
-
-	fmt.Println(countedLines)
 
 	for _, item := range countedLines {
 		out = append(out, strconv.Itoa(item.number) + " " + item.line )
@@ -115,18 +97,35 @@ func countingLogic(lines []string, formattedLines []string) (out []string) {
 	return out
 }
 
+func notRepeatingLogic(lines []string, opt Options) (out []string) {
+	// check the first one
+	if formatLineWithOptions(lines[0], opt) != formatLineWithOptions(lines[1], opt) {
+		out = append(out, lines[0])
+	}
+	// check the main body
+	for i := 1; i < len(lines) - 1; i++ {
+		if formatLineWithOptions(lines[i], opt) != formatLineWithOptions(lines[i - 1], opt) &&
+			formatLineWithOptions(lines[i], opt) != formatLineWithOptions(lines[i + 1], opt) {
+			out = append(out, lines[i])
+		}
+	}
+
+	// check the last one line
+	if formatLineWithOptions(lines[len(lines) - 1], opt) != formatLineWithOptions(lines[len(lines) - 1], opt) {
+		out = append(out, lines[len(lines) - 1])
+	}
+
+	return
+}
+
 func Uniq(lines []string, opt Options) (out []string) {
-	//originalLines := lines
-
-	formattedLines := FormatLinesWithOptions(lines, opt.I, opt.SChars, opt.FFields)
-
 	switch opt.WorkMode {
 	case None:
-		return standardLogic(lines, formattedLines)
+		return standardLogic(lines, opt)
 	case C:
-		return countingLogic(lines, formattedLines)
+		return countingLogic(lines, opt)
 	case U:
-
+		return notRepeatingLogic(lines, opt)
 	case D:
 
 	}

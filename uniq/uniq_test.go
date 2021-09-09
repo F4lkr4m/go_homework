@@ -6,39 +6,32 @@ import (
 )
 
 var formattingTest = []struct {
-	i       bool
-	fFields int
-	sChars  int
+	opt Options
 	in      []string
 	out     []string
 }{
-	{ i: true,
-		fFields: 0,
-		sChars: 0,
+	{
+		opt: Options{I: true, FFields: 0, SChars: 0},
 		in: []string{"HelloEverybody", "Hell"},
 		out: []string{"helloeverybody", "hell"},
 	},
-	{ i: true,
-		fFields: 0,
-		sChars: 0,
+	{
+		opt: Options{I: true, FFields: 0, SChars: 0},
 		in: []string{"HelloEverybody", "Hell", "CMON", "HoWArEY o U"},
 		out: []string{"helloeverybody", "hell", "cmon", "howarey o u"},
 	},
-	{ i: true,
-		fFields: 0,
-		sChars: 3,
+	{
+		opt: Options{I: true, FFields: 0, SChars: 3},
 		in: []string{"HelloEverybody", "Hell", "CMON", "HoWArEY o U"},
 		out: []string{"loeverybody", "l", "n", "arey o u"},
 	},
-	{ i: true,
-		fFields: 0,
-		sChars: 5,
+	{
+		opt: Options{I: true, FFields: 0, SChars: 5},
 		in: []string{"HelloEverybody", "Hell", "CMON", "HoWArEY o U"},
 		out: []string{"everybody", "", "", "ey o u"},
 	},
-	{ i: false,
-		fFields: 1,
-		sChars: 4,
+	{
+		opt: Options{I: false, FFields: 1, SChars: 4},
 		in: []string{
 			"We 1ove music.",
 			"I lo1e music.",
@@ -51,7 +44,11 @@ var formattingTest = []struct {
 func TestFormattingLinesWithOptions(t *testing.T) {
 	for _, tt := range formattingTest {
 		t.Run(tt.in[0], func(t *testing.T) {
-			result := FormatLinesWithOptions(tt.in, tt.i, tt.sChars, tt.fFields)
+			var result []string
+			for _, item := range tt.in {
+				result = append(result, formatLineWithOptions(item, tt.opt))
+			}
+
 			if len(result) != len(tt.out) {
 				t.Fatal("Arrays not equal length")
 			}
@@ -64,16 +61,12 @@ func TestFormattingLinesWithOptions(t *testing.T) {
 }
 
 var stdTest = []struct {
-	i       bool
-	fFields int
-	sChars  int
+	opt Options
 	in      []string
 	out     []string
 }{
 	{
-		i: false,
-		fFields: 0,
-		sChars: 0,
+		opt: Options{WorkMode: None, I: false, FFields: 0, SChars: 0},
 		in: []string {
 			"I love music.",
 			"I love music.",
@@ -94,9 +87,7 @@ var stdTest = []struct {
 		},
 	},
 	{
-		i: true,
-		fFields: 0,
-		sChars: 0,
+		opt: Options{WorkMode: None, I: true, FFields: 0, SChars: 0},
 		in: []string {
 			"I LOVE MUSIC.",
 			"I love music.",
@@ -117,9 +108,7 @@ var stdTest = []struct {
 		},
 	},
 	{
-		i: false,
-		fFields: 1,
-		sChars: 0,
+		opt: Options{WorkMode: None, I: false, FFields: 1, SChars: 0},
 		in: []string {
 			"We love music.",
 			"I love music.",
@@ -137,9 +126,7 @@ var stdTest = []struct {
 		},
 	},
 	{
-		i: false,
-		fFields: 0,
-		sChars: 1,
+		opt: Options{WorkMode: None, I: false, FFields: 0, SChars: 1},
 		in: []string {
 			"I love music.",
 			"A love music.",
@@ -159,17 +146,36 @@ var stdTest = []struct {
 	},
 }
 
+func testingUniqFunc(t *testing.T, tt struct{
+											opt Options
+											in[]string
+											out []string}) {
+	result := Uniq(tt.in, tt.opt)
+	if len(result) != len(tt.out) {
+		t.Fatalf("Arrays not equal length result: %d out: %d", len(result), len(tt.out))
+	}
+
+	for i := 0; i < len(result); i++ {
+		require.Equal(t, tt.out[i], result[i], "Cell in array %d", i)
+	}
+}
+
+
+func TestUniqStandard(t *testing.T) {
+	for _, tt := range stdTest {
+		t.Run(tt.in[0], func(t *testing.T) {
+			testingUniqFunc(t, tt)
+		})
+	}
+}
+
 var countTest = []struct {
-	i       bool
-	fFields int
-	sChars  int
+	opt Options
 	in      []string
 	out     []string
 }{
 	{
-		i:       false,
-		fFields: 0,
-		sChars:  0,
+		opt: Options{WorkMode: C, I: false, SChars: 0, FFields: 0},
 		in: []string{
 			"I love music.",
 			"I love music.",
@@ -183,31 +189,68 @@ var countTest = []struct {
 		},
 		out: []string{
 			"3 I love music.",
-			"1",
+			"1 ",
 			"2 I love music of Kartik.",
 			"1 Thanks.",
 			"2 I love music of Kartik.",
 		},
 	},
+	{
+		opt: Options{WorkMode: C, I: true, SChars: 0, FFields: 1},
+		in: []string{
+			"i love music",
+			"a lovE music",
+			"fedor Love music",
+			"",
+			"Hello",
+			"hello",
+			"",
+		},
+		out: []string{
+			"3 i love music",
+			"4 ",
+		},
+	},
+}
+
+func TestUniqCounting(t *testing.T) {
+	for _, tt := range countTest {
+		t.Run(tt.in[0], func(t *testing.T) {
+			testingUniqFunc(t, tt)
+		})
+	}
+}
+
+var notRepeatingTest = []struct {
+	opt Options
+	in      []string
+	out     []string
+}{
+	{
+		opt: Options{WorkMode: U, I: false, FFields: 0, SChars: 0},
+		in: []string {
+			"I love music.",
+			"I love music.",
+			"I love music.",
+			"",
+			"I love music of Kartik.",
+			"I love music of Kartik.",
+			"Thanks.",
+			"I love music of Kartik.",
+			"I love music of Kartik.",
+		},
+		out: []string {
+			"",
+			"Thanks.",
+		},
+	},
 }
 
 
-func TestUniqStandard(t *testing.T) {
-	for _, tt := range countTest {
+func TestUniqNotRepeating(t *testing.T) {
+	for _, tt := range notRepeatingTest {
 		t.Run(tt.in[0], func(t *testing.T) {
-			opt := Options{WorkMode: 1,
-				I: tt.i,
-				FFields: tt.fFields,
-				SChars: tt.sChars,
-			}
-			result := Uniq(tt.in, opt)
-			if len(result) != len(tt.out) {
-				t.Fatalf("Arrays not equal length result: %d out: %d", len(result), len(tt.out))
-			}
-
-			for i := 0; i < len(result); i++ {
-				require.Equal(t, tt.out[i], result[i], "Cell in array %d", i)
-			}
+			testingUniqFunc(t, tt)
 		})
 	}
 }
