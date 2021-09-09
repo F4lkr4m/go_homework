@@ -9,27 +9,27 @@ import (
 
 var formattingTest = []struct {
 	opt utils.Options
-	in      []string
-	out     []string
+	in  []string
+	out []string
 }{
 	{
 		opt: utils.Options{I: true, FFields: 0, SChars: 0},
-		in: []string{"HelloEverybody", "Hell"},
+		in:  []string{"HelloEverybody", "Hell"},
 		out: []string{"helloeverybody", "hell"},
 	},
 	{
 		opt: utils.Options{I: true, FFields: 0, SChars: 0},
-		in: []string{"HelloEverybody", "Hell", "CMON", "HoWArEY o U"},
+		in:  []string{"HelloEverybody", "Hell", "CMON", "HoWArEY o U"},
 		out: []string{"helloeverybody", "hell", "cmon", "howarey o u"},
 	},
 	{
 		opt: utils.Options{I: true, FFields: 0, SChars: 3},
-		in: []string{"HelloEverybody", "Hell", "CMON", "HoWArEY o U"},
+		in:  []string{"HelloEverybody", "Hell", "CMON", "HoWArEY o U"},
 		out: []string{"loeverybody", "l", "n", "arey o u"},
 	},
 	{
 		opt: utils.Options{I: true, FFields: 0, SChars: 5},
-		in: []string{"HelloEverybody", "Hell", "CMON", "HoWArEY o U"},
+		in:  []string{"HelloEverybody", "Hell", "CMON", "HoWArEY o U"},
 		out: []string{"everybody", "", "", "ey o u"},
 	},
 	{
@@ -76,13 +76,13 @@ var similarTestCase = []string{
 
 var uniqTestCases = []struct {
 	opt utils.Options
-	in      []string
-	out     []string
+	in  []string
+	out []string
 }{
 	{
 		opt: utils.Options{WorkMode: utils.None, I: false, FFields: 0, SChars: 0},
-		in: similarTestCase,
-		out: []string {
+		in:  similarTestCase,
+		out: []string{
 			"I love music.",
 			"",
 			"I love music of Kartik.",
@@ -92,7 +92,7 @@ var uniqTestCases = []struct {
 	},
 	{
 		opt: utils.Options{WorkMode: utils.None, I: true, FFields: 0, SChars: 0},
-		in: []string {
+		in: []string{
 			"I LOVE MUSIC.",
 			"I love music.",
 			"I LoVe MuSiC.",
@@ -103,7 +103,7 @@ var uniqTestCases = []struct {
 			"I love music of Kartik.",
 			"I love MuSIC of Kartik.",
 		},
-		out: []string {
+		out: []string{
 			"I LOVE MUSIC.",
 			"",
 			"I love MuSIC of Kartik.",
@@ -113,7 +113,7 @@ var uniqTestCases = []struct {
 	},
 	{
 		opt: utils.Options{WorkMode: utils.None, I: false, FFields: 1, SChars: 0},
-		in: []string {
+		in: []string{
 			"We love music.",
 			"I love music.",
 			"They love music.",
@@ -122,7 +122,7 @@ var uniqTestCases = []struct {
 			"We love music of Kartik.",
 			"Thanks.",
 		},
-		out: []string {
+		out: []string{
 			"We love music.",
 			"",
 			"I love music of Kartik.",
@@ -131,7 +131,7 @@ var uniqTestCases = []struct {
 	},
 	{
 		opt: utils.Options{WorkMode: utils.None, I: false, FFields: 0, SChars: 1},
-		in: []string {
+		in: []string{
 			"I love music.",
 			"A love music.",
 			"C love music.",
@@ -140,7 +140,7 @@ var uniqTestCases = []struct {
 			"We love music of Kartik.",
 			"Thanks.",
 		},
-		out: []string {
+		out: []string{
 			"I love music.",
 			"",
 			"I love music of Kartik.",
@@ -150,7 +150,7 @@ var uniqTestCases = []struct {
 	},
 	{
 		opt: utils.Options{WorkMode: utils.C, I: false, SChars: 0, FFields: 0},
-		in: similarTestCase,
+		in:  similarTestCase,
 		out: []string{
 			"3 I love music.",
 			"1 ",
@@ -177,16 +177,16 @@ var uniqTestCases = []struct {
 	},
 	{
 		opt: utils.Options{WorkMode: utils.U, I: false, FFields: 0, SChars: 0},
-		in: similarTestCase,
-		out: []string {
+		in:  similarTestCase,
+		out: []string{
 			"",
 			"Thanks.",
 		},
 	},
 	{
 		opt: utils.Options{WorkMode: utils.D, I: false, FFields: 0, SChars: 0},
-		in: similarTestCase,
-		out: []string {
+		in:  similarTestCase,
+		out: []string{
 			"I love music.",
 			"I love music of Kartik.",
 			"I love music of Kartik.",
@@ -194,32 +194,33 @@ var uniqTestCases = []struct {
 	},
 	{
 		opt: utils.Options{WorkMode: utils.U, I: false, FFields: 0, SChars: 0},
-		in: similarTestCase,
-		out: []string {
+		in:  similarTestCase,
+		out: []string{
 			"",
 			"Thanks.",
 		},
 	},
 	{
 		opt: utils.Options{WorkMode: utils.None, I: false, FFields: 0, SChars: 0},
-		in: []string {
+		in: []string{
 			"Hello",
 			"Hello",
 			"Hello",
 			"Hell",
 			"Hell",
 		},
-		out: []string {
+		out: []string{
 			"Hello",
 			"Hell",
 		},
 	},
 }
 
-func testingUniqFunc(t *testing.T, tt struct{
-											opt utils.Options
-											in[]string
-											out []string}) {
+func testingUniqFunc(t *testing.T, tt struct {
+	opt utils.Options
+	in  []string
+	out []string
+}) {
 	result := Uniq(tt.in, tt.opt)
 	if len(result) != len(tt.out) {
 		t.Fatalf("Arrays not equal length result: %d out: %d", len(result), len(tt.out))
@@ -230,10 +231,9 @@ func testingUniqFunc(t *testing.T, tt struct{
 	}
 }
 
-
 func TestUniq(t *testing.T) {
 	for index, tt := range uniqTestCases {
-		t.Run("case num" + strconv.Itoa(index) , func(t *testing.T) {
+		t.Run("case num"+strconv.Itoa(index), func(t *testing.T) {
 			testingUniqFunc(t, tt)
 		})
 	}

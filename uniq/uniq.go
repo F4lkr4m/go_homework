@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func formatLineWithOptions(line string, opt utils.Options) (out string){
+func formatLineWithOptions(line string, opt utils.Options) (out string) {
 	formattedLine := line
 
 	for i := 0; i < opt.FFields; i++ {
@@ -36,9 +36,8 @@ func formatLineWithOptions(line string, opt utils.Options) (out string){
 }
 
 type lineWithCounter struct {
-	line string
+	line   string
 	number int
-
 }
 
 func Uniq(lines []string, opt utils.Options) (out []string) {
@@ -47,8 +46,8 @@ func Uniq(lines []string, opt utils.Options) (out []string) {
 	countedLines = append(countedLines, lineWithCounter{lines[0], 1})
 
 	for i := 1; i < len(lines); i++ {
-		if formatLineWithOptions(lines[i], opt) == formatLineWithOptions(countedLines[len(countedLines) - 1].line, opt) {
-			countedLines[len(countedLines) - 1].number++
+		if formatLineWithOptions(lines[i], opt) == formatLineWithOptions(countedLines[len(countedLines)-1].line, opt) {
+			countedLines[len(countedLines)-1].number++
 		} else {
 			countedLines = append(countedLines, lineWithCounter{lines[i], 1})
 		}

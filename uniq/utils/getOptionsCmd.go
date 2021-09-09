@@ -18,13 +18,13 @@ const (
 const FileNum = 2
 
 type Options struct {
-	I bool  // no case-sensitive
-	SChars int
+	I       bool // no case-sensitive
+	SChars  int
 	FFields int
 
 	WorkMode Mode
 
-	InputFilename string
+	InputFilename  string
 	OutputFilename string
 }
 

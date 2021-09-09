@@ -24,7 +24,7 @@ func (calc *Calc) Solve(input string) (result float64, err error) {
 	// get polish expression
 	polishExpression := convertToPolishSystem(splittedInput)
 	// calculate
-	return calc.countPolishSystem(polishExpression), nil
+	return countPolishSystem(polishExpression), nil
 }
 
 // split string to []string with needed math operands and actions
@@ -118,7 +118,7 @@ func convertToPolishSystem(input []string) (output []string) {
 }
 
 // counting func
-func (calc *Calc) countPolishSystem(input []string) (result float64) {
+func countPolishSystem(input []string) (result float64) {
 	numberStack := make([]float64, 0)
 
 	for i := 0; i < len(input); i++ {
