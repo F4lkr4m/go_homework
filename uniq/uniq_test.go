@@ -157,13 +157,45 @@ var stdTest = []struct {
 			"Thanks.",
 		},
 	},
-
 }
 
+var countTest = []struct {
+	i       bool
+	fFields int
+	sChars  int
+	in      []string
+	out     []string
+}{
+	{
+		i:       false,
+		fFields: 0,
+		sChars:  0,
+		in: []string{
+			"I love music.",
+			"I love music.",
+			"I love music.",
+			"",
+			"I love music of Kartik.",
+			"I love music of Kartik.",
+			"Thanks.",
+			"I love music of Kartik.",
+			"I love music of Kartik.",
+		},
+		out: []string{
+			"3 I love music.",
+			"1",
+			"2 I love music of Kartik.",
+			"1 Thanks.",
+			"2 I love music of Kartik.",
+		},
+	},
+}
+
+
 func TestUniqStandard(t *testing.T) {
-	for _, tt := range stdTest {
+	for _, tt := range countTest {
 		t.Run(tt.in[0], func(t *testing.T) {
-			opt := Options{WorkMode: 0,
+			opt := Options{WorkMode: 1,
 				I: tt.i,
 				FFields: tt.fFields,
 				SChars: tt.sChars,

@@ -1,6 +1,10 @@
 package uniq
 
-import "strings"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 type Mode int
 
@@ -74,6 +78,43 @@ func standardLogic(lines []string, formattedLines []string) (out []string){
 	return out
 }
 
+type lineWithCounter struct {
+	line string
+	number int
+
+}
+
+func countingLogic(lines []string, formattedLines []string) (out []string) {
+
+	// just add the first one line
+	var countedLines []lineWithCounter
+
+	var counter int
+
+	// check other lines
+	for i := 1; i < len(lines) - 1; i++ {
+		if formattedLines[i - 1] != formattedLines[i] {
+			countedLines = append(countedLines, lineWithCounter{lines[i], counter})
+			counter = 1
+		} else {
+			counter++
+		}
+	}
+
+	if formattedLines[len(lines) - 1] != formattedLines[len(lines) - 2] {
+		out = append(out, lines[len(lines) - 1])
+		countedLines = append(countedLines, lineWithCounter{lines[len(lines) - 1], counter})
+	}
+
+	fmt.Println(countedLines)
+
+	for _, item := range countedLines {
+		out = append(out, strconv.Itoa(item.number) + " " + item.line )
+	}
+
+	return out
+}
+
 func Uniq(lines []string, opt Options) (out []string) {
 	//originalLines := lines
 
@@ -83,7 +124,7 @@ func Uniq(lines []string, opt Options) (out []string) {
 	case None:
 		return standardLogic(lines, formattedLines)
 	case C:
-
+		return countingLogic(lines, formattedLines)
 	case U:
 
 	case D:
