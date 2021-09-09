@@ -2,6 +2,7 @@ package uniq
 
 import (
 	"github.com/stretchr/testify/require"
+	"strconv"
 	"testing"
 )
 
@@ -60,24 +61,26 @@ func TestFormattingLinesWithOptions(t *testing.T) {
 	}
 }
 
-var stdTest = []struct {
+var similarTestCase = []string{
+	"I love music.",
+	"I love music.",
+	"I love music.",
+	"",
+	"I love music of Kartik.",
+	"I love music of Kartik.",
+	"Thanks.",
+	"I love music of Kartik.",
+	"I love music of Kartik.",
+}
+
+var uniqTestCases = []struct {
 	opt Options
 	in      []string
 	out     []string
 }{
 	{
 		opt: Options{WorkMode: None, I: false, FFields: 0, SChars: 0},
-		in: []string {
-			"I love music.",
-			"I love music.",
-			"I love music.",
-			"",
-			"I love music of Kartik.",
-			"I love music of Kartik.",
-			"Thanks.",
-			"I love music of Kartik.",
-			"I love music of Kartik.",
-		},
+		in: similarTestCase,
 		out: []string {
 			"I love music.",
 			"",
@@ -144,49 +147,9 @@ var stdTest = []struct {
 			"Thanks.",
 		},
 	},
-}
-
-func testingUniqFunc(t *testing.T, tt struct{
-											opt Options
-											in[]string
-											out []string}) {
-	result := Uniq(tt.in, tt.opt)
-	if len(result) != len(tt.out) {
-		t.Fatalf("Arrays not equal length result: %d out: %d", len(result), len(tt.out))
-	}
-
-	for i := 0; i < len(result); i++ {
-		require.Equal(t, tt.out[i], result[i], "Cell in array %d", i)
-	}
-}
-
-
-func TestUniqStandard(t *testing.T) {
-	for _, tt := range stdTest {
-		t.Run(tt.in[0], func(t *testing.T) {
-			testingUniqFunc(t, tt)
-		})
-	}
-}
-
-var countTest = []struct {
-	opt Options
-	in      []string
-	out     []string
-}{
 	{
 		opt: Options{WorkMode: C, I: false, SChars: 0, FFields: 0},
-		in: []string{
-			"I love music.",
-			"I love music.",
-			"I love music.",
-			"",
-			"I love music of Kartik.",
-			"I love music of Kartik.",
-			"Thanks.",
-			"I love music of Kartik.",
-			"I love music of Kartik.",
-		},
+		in: similarTestCase,
 		out: []string{
 			"3 I love music.",
 			"1 ",
@@ -211,45 +174,65 @@ var countTest = []struct {
 			"4 ",
 		},
 	},
-}
-
-func TestUniqCounting(t *testing.T) {
-	for _, tt := range countTest {
-		t.Run(tt.in[0], func(t *testing.T) {
-			testingUniqFunc(t, tt)
-		})
-	}
-}
-
-var notRepeatingTest = []struct {
-	opt Options
-	in      []string
-	out     []string
-}{
 	{
 		opt: Options{WorkMode: U, I: false, FFields: 0, SChars: 0},
-		in: []string {
-			"I love music.",
-			"I love music.",
-			"I love music.",
-			"",
-			"I love music of Kartik.",
-			"I love music of Kartik.",
-			"Thanks.",
-			"I love music of Kartik.",
-			"I love music of Kartik.",
-		},
+		in: similarTestCase,
 		out: []string {
 			"",
 			"Thanks.",
 		},
 	},
+	{
+		opt: Options{WorkMode: D, I: false, FFields: 0, SChars: 0},
+		in: similarTestCase,
+		out: []string {
+			"I love music.",
+			"I love music of Kartik.",
+			"I love music of Kartik.",
+		},
+	},
+	{
+		opt: Options{WorkMode: U, I: false, FFields: 0, SChars: 0},
+		in: similarTestCase,
+		out: []string {
+			"",
+			"Thanks.",
+		},
+	},
+	{
+		opt: Options{WorkMode: None, I: false, FFields: 0, SChars: 0},
+		in: []string {
+			"Hello",
+			"Hello",
+			"Hello",
+			"Hell",
+			"Hell",
+		},
+		out: []string {
+			"Hello",
+			"Hell",
+		},
+	},
+}
+
+func testingUniqFunc(t *testing.T, tt struct{
+											opt Options
+											in[]string
+											out []string}) {
+	result := Uniq(tt.in, tt.opt)
+	if len(result) != len(tt.out) {
+		t.Fatalf("Arrays not equal length result: %d out: %d", len(result), len(tt.out))
+	}
+
+	for i := 0; i < len(result); i++ {
+		require.Equal(t, tt.out[i], result[i], "Cell in array %d", i)
+	}
 }
 
 
-func TestUniqNotRepeating(t *testing.T) {
-	for _, tt := range notRepeatingTest {
-		t.Run(tt.in[0], func(t *testing.T) {
+func TestUniq(t *testing.T) {
+	for index, tt := range uniqTestCases {
+		t.Run("case num" + strconv.Itoa(index) , func(t *testing.T) {
 			testingUniqFunc(t, tt)
 		})
 	}

@@ -54,34 +54,17 @@ func formatLineWithOptions(line string, opt Options) (out string){
 	return
 }
 
-func standardLogic(lines []string, opt Options) (out []string){
-	// just add the first one line
-	out = append(out, lines[0])
-
-	// check other lines
-	for i := 1; i < len(lines); i++ {
-		if formatLineWithOptions(lines[i], opt) != formatLineWithOptions(lines[i - 1], opt)  {
-			out = append(out, lines[i])
-		}
-	}
-
-	return out
-}
-
 type lineWithCounter struct {
 	line string
 	number int
 
 }
 
-func countingLogic(lines []string, opt Options) (out []string) {
-
-	// just add the first one line
+func Uniq(lines []string, opt Options) (out []string) {
 	var countedLines []lineWithCounter
 
 	countedLines = append(countedLines, lineWithCounter{lines[0], 1})
 
-	// check other lines
 	for i := 1; i < len(lines); i++ {
 		if formatLineWithOptions(lines[i], opt) == formatLineWithOptions(countedLines[len(countedLines) - 1].line, opt) {
 			countedLines[len(countedLines) - 1].number++
@@ -91,45 +74,21 @@ func countingLogic(lines []string, opt Options) (out []string) {
 	}
 
 	for _, item := range countedLines {
-		out = append(out, strconv.Itoa(item.number) + " " + item.line )
-	}
-
-	return out
-}
-
-func notRepeatingLogic(lines []string, opt Options) (out []string) {
-	// check the first one
-	if formatLineWithOptions(lines[0], opt) != formatLineWithOptions(lines[1], opt) {
-		out = append(out, lines[0])
-	}
-	// check the main body
-	for i := 1; i < len(lines) - 1; i++ {
-		if formatLineWithOptions(lines[i], opt) != formatLineWithOptions(lines[i - 1], opt) &&
-			formatLineWithOptions(lines[i], opt) != formatLineWithOptions(lines[i + 1], opt) {
-			out = append(out, lines[i])
+		switch opt.WorkMode {
+		case None:
+			out = append(out, item.line)
+		case D:
+			if item.number > 1 {
+				out = append(out, item.line)
+			}
+		case C:
+			out = append(out, strconv.Itoa(item.number)+" "+item.line)
+		case U:
+			if item.number == 1 {
+				out = append(out, item.line)
+			}
 		}
 	}
-
-	// check the last one line
-	if formatLineWithOptions(lines[len(lines) - 1], opt) != formatLineWithOptions(lines[len(lines) - 1], opt) {
-		out = append(out, lines[len(lines) - 1])
-	}
-
-	return
-}
-
-func Uniq(lines []string, opt Options) (out []string) {
-	switch opt.WorkMode {
-	case None:
-		return standardLogic(lines, opt)
-	case C:
-		return countingLogic(lines, opt)
-	case U:
-		return notRepeatingLogic(lines, opt)
-	case D:
-
-	}
-
 
 	return
 }
