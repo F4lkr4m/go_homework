@@ -1,33 +1,14 @@
 package uniq
 
 import (
+	"go_homework/uniq/utils"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 )
 
-type Mode int
-
-const (
-	None Mode = iota
-	C
-	D
-	U
-)
-
-const FileNum = 2
-
-type Options struct {
-	I bool  // no case-sensitive
-	SChars int
-	FFields int
-
-	WorkMode Mode
-
-	InputFilename string
-	OutputFilename string
-}
-
-func formatLineWithOptions(line string, opt Options) (out string){
+func formatLineWithOptions(line string, opt utils.Options) (out string){
 	formattedLine := line
 
 	for i := 0; i < opt.FFields; i++ {
@@ -60,7 +41,7 @@ type lineWithCounter struct {
 
 }
 
-func Uniq(lines []string, opt Options) (out []string) {
+func Uniq(lines []string, opt utils.Options) (out []string) {
 	var countedLines []lineWithCounter
 
 	countedLines = append(countedLines, lineWithCounter{lines[0], 1})
@@ -75,20 +56,53 @@ func Uniq(lines []string, opt Options) (out []string) {
 
 	for _, item := range countedLines {
 		switch opt.WorkMode {
-		case None:
+		case utils.None:
 			out = append(out, item.line)
-		case D:
+		case utils.D:
 			if item.number > 1 {
 				out = append(out, item.line)
 			}
-		case C:
+		case utils.C:
 			out = append(out, strconv.Itoa(item.number)+" "+item.line)
-		case U:
+		case utils.U:
 			if item.number == 1 {
 				out = append(out, item.line)
 			}
+		case utils.Empty:
+			return
 		}
 	}
 
 	return
+}
+
+func UniqManager() {
+	opt := utils.GetOptions()
+	var result []string
+	var data []string
+	if opt.InputFilename == "" {
+		data = utils.Read(os.Stdin)
+	} else {
+		file, err := os.Open(opt.InputFilename)
+		if err != nil {
+			log.Fatalf("Can not open file")
+		}
+		data = utils.Read(file)
+		file.Close()
+	}
+
+	result = Uniq(data, opt)
+
+	if opt.OutputFilename == "" {
+		utils.Write(os.Stdout, result)
+	} else {
+		file, err := os.Open(opt.InputFilename)
+		if err != nil {
+			log.Fatalf("Can not open file")
+		}
+
+		utils.Write(file, result)
+
+		file.Close()
+	}
 }

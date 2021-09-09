@@ -1,11 +1,8 @@
 package main
 
-import (
-	"fmt"
-	"go_homework/uniq/utils"
-)
+import "go_homework/uniq"
 
 func main() {
-	fmt.Println(utils.GetOptions())
+	uniq.UniqManager()
 	return
 }

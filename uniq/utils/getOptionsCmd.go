@@ -3,30 +3,52 @@ package utils
 import (
 	"errors"
 	"flag"
-	"go_homework/uniq"
 )
 
-func getOptionalMode(c bool, d bool, u bool) uniq.Mode {
-	if ((c && d) || (d && u) || (c && u)) == true {
-		panic(errors.New("Invalid mode type.\n"))
+type Mode int
+
+const (
+	None Mode = iota
+	C
+	D
+	U
+	Empty
+)
+
+const FileNum = 2
+
+type Options struct {
+	I bool  // no case-sensitive
+	SChars int
+	FFields int
+
+	WorkMode Mode
+
+	InputFilename string
+	OutputFilename string
+}
+
+func getOptionalMode(c bool, d bool, u bool) Mode {
+	if ((c && u) || (c && d)) == true {
+		return Empty
 	}
 
 	if c {
-		return uniq.C
+		return C
 	}
 
 	if d {
-		return uniq.D
+		return D
 	}
 
 	if u {
-		return uniq.U
+		return U
 	}
-	return uniq.None
+	return None
 }
 
-func GetOptions() uniq.Options {
-	options := uniq.Options{}
+func GetOptions() Options {
+	options := Options{}
 
 	c := flag.Bool("c", false, "count the number of occurrences of lines in the input")
 	d := flag.Bool("d", false, "print only those lines that were repeated int the input data")
@@ -43,7 +65,7 @@ func GetOptions() uniq.Options {
 
 	options.WorkMode = getOptionalMode(*c, *d, *u)
 
-	if len(flag.Args()) > uniq.FileNum {
+	if len(flag.Args()) > FileNum {
 		panic(errors.New("Too much arguments\n"))
 	}
 
