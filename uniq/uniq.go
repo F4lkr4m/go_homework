@@ -8,36 +8,32 @@ import (
 	"strings"
 )
 
-func formatLineWithOptions(line string, opt utils.Options) (out string) {
+func formatLineWithOptions(line string, opt utils.Options)  string {
 	formattedLine := line
 
 	for i := 0; i < opt.FFields; i++ {
-		if index := strings.IndexByte(line, ' '); index == -1 {
-			out = ""
-			return
-		} else {
-			formattedLine = line[index:]
+		index := strings.IndexByte(line, ' ')
+		if index == -1 {
+			return ""
 		}
+		formattedLine = line[index:]
 	}
 
-	if len(formattedLine) > opt.SChars {
-		formattedLine = formattedLine[opt.SChars:]
-	} else {
-		out = ""
-		return
+	if len(formattedLine) <= opt.SChars {
+		return ""
 	}
+	formattedLine = formattedLine[opt.SChars:]
 
-	if opt.I {
+	if opt.CaseInsensitive {
 		formattedLine = strings.ToLower(formattedLine)
 	}
 
-	out = formattedLine
-	return
+	return formattedLine
 }
 
 type lineWithCounter struct {
-	line   string
-	number int
+	line    string
+	counter int
 }
 
 func Uniq(lines []string, opt utils.Options) (out []string) {
@@ -45,11 +41,12 @@ func Uniq(lines []string, opt utils.Options) (out []string) {
 
 	countedLines = append(countedLines, lineWithCounter{lines[0], 1})
 
-	for i := 1; i < len(lines); i++ {
-		if formatLineWithOptions(lines[i], opt) == formatLineWithOptions(countedLines[len(countedLines)-1].line, opt) {
-			countedLines[len(countedLines)-1].number++
+	//for i := 1; i < len(lines); i++ {
+	for _, line := range lines[1:] {
+		if formatLineWithOptions(line, opt) == formatLineWithOptions(countedLines[len(countedLines)-1].line, opt) {
+			countedLines[len(countedLines)-1].counter++
 		} else {
-			countedLines = append(countedLines, lineWithCounter{lines[i], 1})
+			countedLines = append(countedLines, lineWithCounter{line, 1})
 		}
 	}
 
@@ -58,13 +55,13 @@ func Uniq(lines []string, opt utils.Options) (out []string) {
 		case utils.None:
 			out = append(out, item.line)
 		case utils.D:
-			if item.number > 1 {
+			if item.counter > 1 {
 				out = append(out, item.line)
 			}
 		case utils.C:
-			out = append(out, strconv.Itoa(item.number)+" "+item.line)
+			out = append(out, strconv.Itoa(item.counter)+" "+item.line)
 		case utils.U:
-			if item.number == 1 {
+			if item.counter == 1 {
 				out = append(out, item.line)
 			}
 		case utils.Empty:

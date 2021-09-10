@@ -13,7 +13,6 @@ func check(e error) {
 
 func Read(buf *os.File) []string {
 	scanner := bufio.NewScanner(buf)
-
 	var result []string
 
 	for scanner.Scan() {
@@ -21,7 +20,6 @@ func Read(buf *os.File) []string {
 
 		result = append(result, line)
 	}
-
 	return result
 }
 

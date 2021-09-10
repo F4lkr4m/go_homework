@@ -18,9 +18,9 @@ const (
 const FileNum = 2
 
 type Options struct {
-	I       bool // no case-sensitive
-	SChars  int
-	FFields int
+	CaseInsensitive bool // no case-insensitive
+	SChars          int
+	FFields         int
 
 	WorkMode Mode
 
@@ -29,21 +29,19 @@ type Options struct {
 }
 
 func getOptionalMode(c bool, d bool, u bool) Mode {
-	if ((c && u) || (c && d)) == true {
+	if (c && u) || (c && d) || (u && d) {
 		return Empty
 	}
 
-	if c {
+	switch {
+	case c:
 		return C
-	}
-
-	if d {
+	case d:
 		return D
-	}
-
-	if u {
+	case u:
 		return U
 	}
+
 	return None
 }
 
@@ -51,11 +49,11 @@ func GetOptions() Options {
 	options := Options{}
 
 	c := flag.Bool("c", false, "count the number of occurrences of lines in the input")
-	d := flag.Bool("d", false, "print only those lines that were repeated int the input data")
-	u := flag.Bool("u", false, "print only those lines that were repeated int the input data")
+	d := flag.Bool("d", false, "print only those lines that were repeated in the input data")
+	u := flag.Bool("u", false, "print only those lines that were not repeated in the input data")
 
 	// get sensitive flag
-	flag.BoolVar(&options.I, "i", false, "make program no sensitive to case")
+	flag.BoolVar(&options.CaseInsensitive, "i", false, "make program no sensitive to case")
 
 	// flags with number argument
 	flag.IntVar(&options.FFields, "f", 0, "ignore the first [num] of fields in line")
@@ -71,11 +69,15 @@ func GetOptions() Options {
 
 	// get filenames
 	switch len(flag.Args()) {
+	case 0:
+
 	case 1:
 		options.InputFilename = flag.Args()[0]
 	case 2:
 		options.InputFilename = flag.Args()[0]
 		options.OutputFilename = flag.Args()[1]
+	default:
+		panic("Too much args in input flags")
 	}
 
 	return options

@@ -1,9 +1,11 @@
 package main
 
-import "go_homework/calc"
+import (
+	"go_homework/uniq"
+)
 
 func main() {
-	//uniq.UniqManager()
-	calc.SolveArgsExpression()
+	uniq.UniqManager()
+	//calc.SolveArgsExpression()
 	return
 }
