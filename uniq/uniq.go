@@ -1,8 +1,8 @@
 package uniq
 
 import (
+	"errors"
 	"go_homework/uniq/utils"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -73,32 +73,43 @@ func Uniq(lines []string, opt utils.Options) (out []string) {
 }
 
 func UniqManager() {
-	opt := utils.GetOptions()
+	opt, err := utils.GetOptions()
+	if err != nil {
+		panic(err)
+	}
 	var result []string
 	var data []string
+	var inputStream *os.File
 	if opt.InputFilename == "" {
-		data = utils.Read(os.Stdin)
+		inputStream = os.Stdin
 	} else {
-		file, err := os.Open(opt.InputFilename)
+		inputStream, err = os.Open(opt.InputFilename)
 		if err != nil {
-			log.Fatalf("Can not open file")
+			panic(errors.New("Can not open file for reading\n"))
 		}
-		data = utils.Read(file)
-		file.Close()
+		defer inputStream.Close()
 	}
 
+	data = utils.Read(inputStream)
+	// if no data, just return
+	if len(data) == 0 {
+		return
+	}
 	result = Uniq(data, opt)
 
+	var outputStream *os.File
 	if opt.OutputFilename == "" {
-		utils.Write(os.Stdout, result)
+		outputStream = os.Stdout
 	} else {
-		file, err := os.Open(opt.InputFilename)
+		outputStream, err = os.Open(opt.InputFilename)
 		if err != nil {
-			log.Fatalf("Can not open file")
+			panic(errors.New("Can not open file for writing\n"))
 		}
 
-		utils.Write(file, result)
-
-		file.Close()
+		defer outputStream.Close()
+	}
+	err = utils.Write(outputStream, result)
+	if err != nil {
+		panic(err)
 	}
 }

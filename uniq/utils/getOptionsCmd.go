@@ -45,7 +45,7 @@ func getOptionalMode(c bool, d bool, u bool) Mode {
 	return None
 }
 
-func GetOptions() Options {
+func GetOptions() (Options, error) {
 	options := Options{}
 
 	c := flag.Bool("c", false, "count the number of occurrences of lines in the input")
@@ -64,21 +64,21 @@ func GetOptions() Options {
 	options.WorkMode = getOptionalMode(*c, *d, *u)
 
 	if len(flag.Args()) > FileNum {
-		panic(errors.New("Too much arguments\n"))
+		return options, errors.New("Too much arguments\n")
 	}
 
 	// get filenames
 	switch len(flag.Args()) {
 	case 0:
-
+		// intentionally empty case
 	case 1:
 		options.InputFilename = flag.Args()[0]
 	case 2:
 		options.InputFilename = flag.Args()[0]
 		options.OutputFilename = flag.Args()[1]
 	default:
-		panic("Too much args in input flags")
+		return options, errors.New("Too much arguments\n")
 	}
 
-	return options
+	return options, nil
 }
