@@ -19,8 +19,7 @@ func getArg() (out string) {
 }
 
 func SolveArgsExpression() {
-	calc := Calc{}
-	result, err := calc.Solve(getArg())
+	result, err := Solve(getArg())
 	if err != nil {
 		fmt.Println(err)
 	} else {

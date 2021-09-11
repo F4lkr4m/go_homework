@@ -4,21 +4,18 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
-type Calc struct{}
-
-func (calc *Calc) Solve(input string) (result float64, err error) {
-	// catching of errors
+func Solve(input string) (result float64, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			err = errors.New(r.(string))
+			err = r.(error)
 			return
 		}
 	}()
-
 	// clear input
-	input = strings.Replace(input, " ", "", -1)
+	input = strings.ReplaceAll(input, " ", "")
 	// split input
 	splittedInput := splitToOperands(input)
 	// get polish expression
@@ -30,7 +27,10 @@ func (calc *Calc) Solve(input string) (result float64, err error) {
 // split string to []string with needed math operands and actions
 func splitToOperands(input string) (output []string) {
 	for i := 0; i < len(input); {
-		sign, increment := getNextOperand(input, i)
+		sign, increment, err := getNextOperand(input, i)
+		if err != nil {
+			panic(err)
+		}
 		output = append(output, sign)
 		i += increment
 	}
@@ -39,27 +39,30 @@ func splitToOperands(input string) (output []string) {
 }
 
 // get next operand or action from input with the position
-func getNextOperand(input string, position int) (output string, increment int) {
+func getNextOperand(input string, position int) (output string, increment int, err error) {
 	sign := input[position]
 
 	// if sign is action
 	if strings.ContainsAny("()+-/*", string(sign)) {
 		output = output + string(sign)
 		increment++
-		return output, increment
+		return output, increment, nil
 	}
 
 	// if sign is number
 	for i := position; i < len(input) && !strings.ContainsAny("()+-/*", string(input[i])); i++ {
-		if input[i] == ',' {
+		if input[i] == ',' || input[i] == '.' {
 			output += string('.')
 			continue
 		}
 
+		if !unicode.IsDigit(rune(input[i])) {
+			return output, len(output), errors.New("Parsing expression error. Expected number, but get " + string(input[i]) +"\n")
+		}
 		output += string(input[i])
 	}
 
-	return output, len(output)
+	return output, len(output), nil
 }
 
 func reverseSlice(input []string) []string {
@@ -80,8 +83,9 @@ func convertToPolishSystem(input []string) (output []string) {
 	// get every part of input and analyze it
 	for i := 0; i < len(input); i++ {
 		sign := input[i]
-		if strings.ContainsAny("+-*/", sign) {
-			// drop signs to output until operator with smaller be on the top of stack
+		switch {
+		case strings.ContainsAny("+-*/", sign):
+			// drop signs to output until operator with smaller priority be on the top of stack
 			j := len(operatorStack) - 1
 			for ; j >= 0 && (priority[operatorStack[j]] >= priority[sign]); j-- {
 				var dropSign string
@@ -90,9 +94,9 @@ func convertToPolishSystem(input []string) (output []string) {
 			}
 			// add operand to stack
 			operatorStack = append(operatorStack, sign)
-		} else if string(sign) == "(" {
+		case string(sign) == "(":
 			operatorStack = append(operatorStack, sign)
-		} else if string(sign) == ")" {
+		case string(sign) == ")":
 			j := len(operatorStack) - 1
 			// drop signs until (
 			for ; j >= 0 && operatorStack[j] != "("; j-- {
@@ -106,7 +110,7 @@ func convertToPolishSystem(input []string) (output []string) {
 			} else {
 				operatorStack = operatorStack[:len(operatorStack)-1]
 			}
-		} else {
+		default:
 			output = append(output, sign)
 		}
 	}

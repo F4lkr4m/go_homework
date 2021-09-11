@@ -62,11 +62,10 @@ var tests = [][]struct {
 }
 
 func TestElementaryOperations(t *testing.T) {
-	calc := Calc{}
 	for _, cases := range tests {
 		for _, tt := range cases {
 			t.Run(tt.in, func(t *testing.T) {
-				val, err := calc.Solve(tt.in)
+				val, err := Solve(tt.in)
 				if err != nil {
 					t.Errorf("Something went wrong, error in solving elementary operations.")
 				}
@@ -90,10 +89,9 @@ var hardTests = []struct {
 }
 
 func TestHardOperations(t *testing.T) {
-	calc := Calc{}
 	for _, tt := range hardTests {
 		t.Run(tt.in, func(t *testing.T) {
-			val, err := calc.Solve(tt.in)
+			val, err := Solve(tt.in)
 			if err != nil {
 				t.Errorf("Something went wrong, error in solving elementary operations.")
 			}
@@ -116,10 +114,9 @@ var errorTests = []struct {
 }
 
 func TestErrorInput(t *testing.T) {
-	calc := Calc{}
 	for _, tt := range errorTests {
 		t.Run(tt.in, func(t *testing.T) {
-			_, err := calc.Solve(tt.in)
+			_, err := Solve(tt.in)
 			require.EqualError(t, err, tt.out)
 		})
 	}
