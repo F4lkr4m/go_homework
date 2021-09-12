@@ -7,7 +7,6 @@ import (
 func main() {
 
 	err := uniq.UniqManager()
-	//err := calc.SolveArgsExpression()
 	if err != nil {
 		panic(err)
 	}
