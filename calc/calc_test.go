@@ -61,6 +61,8 @@ var tests = [][]struct {
 	mulTests,
 }
 
+const tolerance = 1e-15
+
 func TestElementaryOperations(t *testing.T) {
 	for _, cases := range tests {
 		for _, tt := range cases {
@@ -69,7 +71,6 @@ func TestElementaryOperations(t *testing.T) {
 				if err != nil {
 					t.Errorf("Something went wrong, error in solving elementary operations.")
 				}
-				tolerance := 1e-15
 				if diff := math.Abs(val - tt.out); diff > tolerance {
 					t.Errorf("Something went wrong, error in solving elementary operations\nExpected: %f\nGot: %f", tt.out, val)
 				}
@@ -93,7 +94,7 @@ func TestHardOperations(t *testing.T) {
 		t.Run(tt.in, func(t *testing.T) {
 			val, err := Solve(tt.in)
 			if err != nil {
-				t.Errorf("Something went wrong, error in solving elementary operations.")
+				t.Errorf("Something went wrong, error in solving elementary operations. Error: " + err.Error())
 			}
 			require.Equal(t, tt.out, val, "Two numbers should be the same.")
 		})
@@ -102,22 +103,22 @@ func TestHardOperations(t *testing.T) {
 
 var errorTests = []struct {
 	in  string
-	out string
+	out error
 }{
-	{"1 + 3 + (4 * (3 + (4 / 1))", "Parsing expression error"},
-	{"1.2 + 3 + (4 * (3 + (4 / 1))))", "Parsing expression error"},
-	{"Hello there", "Parsing expression error"},
-	{"* 3", "Parsing expression error"},
-	{"/ 3", "Parsing expression error"},
-	{"1 + 3 + (4 * (3 + (4 / 0)))", "Zero division"},
-	{"1 + 3 + (4 * (3 + (4 / (1 - 1))))", "Zero division"},
+	{"1 + 3 + (4 * (3 + (4 / 1))", &ParsingExprError{}},
+	{"1.2 + 3 + (4 * (3 + (4 / 1))))", &ParsingExprError{}},
+	{"Hello there", &ParsingExprError{}},
+	{"* 3", &ParsingExprError{}},
+	{"/ 3", &ParsingExprError{}},
+	{"1 + 3 + (4 * (3 + (4 / 0)))", &ZeroDivisionError{}},
+	{"1 + 3 + (4 * (3 + (4 / (1 - 1))))", &ZeroDivisionError{}},
 }
 
 func TestErrorInput(t *testing.T) {
 	for _, tt := range errorTests {
 		t.Run(tt.in, func(t *testing.T) {
 			_, err := Solve(tt.in)
-			require.EqualError(t, err, tt.out)
+			require.EqualError(t, err, tt.out.Error())
 		})
 	}
 }

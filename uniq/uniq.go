@@ -1,14 +1,13 @@
 package uniq
 
 import (
-	"errors"
 	"go_homework/uniq/utils"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func formatLineWithOptions(line string, opt utils.Options)  string {
+func formatLineWithOptions(line string, opt utils.Options) string {
 	formattedLine := line
 
 	for i := 0; i < opt.FFields; i++ {
@@ -72,10 +71,10 @@ func Uniq(lines []string, opt utils.Options) (out []string) {
 	return
 }
 
-func UniqManager() {
+func UniqManager() error {
 	opt, err := utils.GetOptions()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	var result []string
 	var data []string
@@ -85,7 +84,7 @@ func UniqManager() {
 	} else {
 		inputStream, err = os.Open(opt.InputFilename)
 		if err != nil {
-			panic(errors.New("Can not open file for reading\n"))
+			return &OpenFileError{opt.InputFilename}
 		}
 		defer inputStream.Close()
 	}
@@ -93,7 +92,7 @@ func UniqManager() {
 	data = utils.Read(inputStream)
 	// if no data, just return
 	if len(data) == 0 {
-		return
+		return nil
 	}
 	result = Uniq(data, opt)
 
@@ -103,13 +102,14 @@ func UniqManager() {
 	} else {
 		outputStream, err = os.Open(opt.InputFilename)
 		if err != nil {
-			panic(errors.New("Can not open file for writing\n"))
+			return &OpenFileError{opt.OutputFilename}
 		}
 
 		defer outputStream.Close()
 	}
 	err = utils.Write(outputStream, result)
 	if err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }

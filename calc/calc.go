@@ -1,7 +1,6 @@
 package calc
 
 import (
-	"errors"
 	"strconv"
 	"strings"
 	"unicode"
@@ -57,7 +56,7 @@ func getNextOperand(input string, position int) (output string, increment int, e
 		}
 
 		if !unicode.IsDigit(rune(input[i])) {
-			return output, len(output), errors.New("Parsing expression error. Expected number, but get " + string(input[i]) +"\n")
+			return output, len(output), &ParsingExprError{}
 		}
 		output += string(input[i])
 	}
@@ -105,9 +104,10 @@ func convertToPolishSystem(input []string) (output []string) {
 				output = append(output, dropSign)
 			}
 
-			if len(operatorStack) == 0 {
-				panic("Parsing expression error")
-			} else {
+			switch {
+			case len(operatorStack) == 0:
+				panic(&ParsingExprError{})
+			default:
 				operatorStack = operatorStack[:len(operatorStack)-1]
 			}
 		default:
@@ -116,8 +116,8 @@ func convertToPolishSystem(input []string) (output []string) {
 	}
 	// add other operators in output
 	operatorStack = reverseSlice(operatorStack)
-	output = append(output, operatorStack...)
 
+	output = append(output, operatorStack...)
 	return output
 }
 
@@ -150,17 +150,17 @@ func countPolishSystem(input []string) (result float64) {
 				numberStack[len(numberStack)-1] -= val
 			case "*":
 				if len(numberStack) == 0 {
-					panic("Parsing expression error")
+					panic(&ParsingExprError{})
 				}
 
 				numberStack[len(numberStack)-1] *= val
 			case "/":
 				if len(numberStack) == 0 {
-					panic("Parsing expression error")
+					panic(&ParsingExprError{})
 				}
 
 				if val == 0 {
-					panic("Zero division")
+					panic(&ZeroDivisionError{})
 				}
 				numberStack[len(numberStack)-1] = numberStack[len(numberStack)-1] / val
 			}
@@ -169,11 +169,10 @@ func countPolishSystem(input []string) (result float64) {
 			if s, err := strconv.ParseFloat(sign, 64); err == nil {
 				numberStack = append(numberStack, s)
 			} else {
-				panic("Parsing expression error")
+				panic(&ParsingExprError{})
 			}
 		}
 	}
 	// result will be in first cell
-	result = numberStack[0]
-	return result
+	return numberStack[0]
 }

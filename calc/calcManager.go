@@ -18,11 +18,11 @@ func getArg() (out string) {
 	return
 }
 
-func SolveArgsExpression() {
+func SolveArgsExpression() error {
 	result, err := Solve(getArg())
 	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(result)
+		return err
 	}
+	fmt.Println(result)
+	return nil
 }

@@ -76,14 +76,14 @@ var similarTestCase = []string{
 
 var uniqTestCases = []struct {
 	testName string
-	opt utils.Options
-	in  []string
-	out []string
+	opt      utils.Options
+	in       []string
+	out      []string
 }{
 	{
 		testName: "Uniq standard test",
-		opt: utils.Options{WorkMode: utils.None, CaseInsensitive: false, FFields: 0, SChars: 0},
-		in:  similarTestCase,
+		opt:      utils.Options{WorkMode: utils.None, CaseInsensitive: false, FFields: 0, SChars: 0},
+		in:       similarTestCase,
 		out: []string{
 			"I love music.",
 			"",
@@ -94,7 +94,7 @@ var uniqTestCases = []struct {
 	},
 	{
 		testName: "Uniq standard different case test",
-		opt: utils.Options{WorkMode: utils.None, CaseInsensitive: true, FFields: 0, SChars: 0},
+		opt:      utils.Options{WorkMode: utils.None, CaseInsensitive: true, FFields: 0, SChars: 0},
 		in: []string{
 			"I LOVE MUSIC.",
 			"I love music.",
@@ -116,7 +116,7 @@ var uniqTestCases = []struct {
 	},
 	{
 		testName: "Uniq standard with -f 1 test",
-		opt: utils.Options{WorkMode: utils.None, CaseInsensitive: false, FFields: 1, SChars: 0},
+		opt:      utils.Options{WorkMode: utils.None, CaseInsensitive: false, FFields: 1, SChars: 0},
 		in: []string{
 			"We love music.",
 			"I love music.",
@@ -135,7 +135,7 @@ var uniqTestCases = []struct {
 	},
 	{
 		testName: "Uniq standard with -s 1 test",
-		opt: utils.Options{WorkMode: utils.None, CaseInsensitive: false, FFields: 0, SChars: 1},
+		opt:      utils.Options{WorkMode: utils.None, CaseInsensitive: false, FFields: 0, SChars: 1},
 		in: []string{
 			"I love music.",
 			"A love music.",
@@ -155,8 +155,8 @@ var uniqTestCases = []struct {
 	},
 	{
 		testName: "Uniq counting lines mode test",
-		opt: utils.Options{WorkMode: utils.C, CaseInsensitive: false, SChars: 0, FFields: 0},
-		in:  similarTestCase,
+		opt:      utils.Options{WorkMode: utils.C, CaseInsensitive: false, SChars: 0, FFields: 0},
+		in:       similarTestCase,
 		out: []string{
 			"3 I love music.",
 			"1 ",
@@ -167,7 +167,7 @@ var uniqTestCases = []struct {
 	},
 	{
 		testName: "Uniq counting lines mode with case-insensitive and -f 1 test",
-		opt: utils.Options{WorkMode: utils.C, CaseInsensitive: true, SChars: 0, FFields: 1},
+		opt:      utils.Options{WorkMode: utils.C, CaseInsensitive: true, SChars: 0, FFields: 1},
 		in: []string{
 			"i love music",
 			"a lovE music",
@@ -184,8 +184,8 @@ var uniqTestCases = []struct {
 	},
 	{
 		testName: "Uniq not repeating lines mode test",
-		opt: utils.Options{WorkMode: utils.U, CaseInsensitive: false, FFields: 0, SChars: 0},
-		in:  similarTestCase,
+		opt:      utils.Options{WorkMode: utils.U, CaseInsensitive: false, FFields: 0, SChars: 0},
+		in:       similarTestCase,
 		out: []string{
 			"",
 			"Thanks.",
@@ -193,8 +193,8 @@ var uniqTestCases = []struct {
 	},
 	{
 		testName: "Uniq repeating lines mode test",
-		opt: utils.Options{WorkMode: utils.D, CaseInsensitive: false, FFields: 0, SChars: 0},
-		in:  similarTestCase,
+		opt:      utils.Options{WorkMode: utils.D, CaseInsensitive: false, FFields: 0, SChars: 0},
+		in:       similarTestCase,
 		out: []string{
 			"I love music.",
 			"I love music of Kartik.",
@@ -203,7 +203,7 @@ var uniqTestCases = []struct {
 	},
 	{
 		testName: "Uniq standard mode with repeating lines input test",
-		opt: utils.Options{WorkMode: utils.None, CaseInsensitive: false, FFields: 0, SChars: 0},
+		opt:      utils.Options{WorkMode: utils.None, CaseInsensitive: false, FFields: 0, SChars: 0},
 		in: []string{
 			"Hello",
 			"Hello",
@@ -220,9 +220,9 @@ var uniqTestCases = []struct {
 
 func testingUniqFunc(t *testing.T, tt struct {
 	testName string
-	opt utils.Options
-	in  []string
-	out []string
+	opt      utils.Options
+	in       []string
+	out      []string
 }) {
 	result := Uniq(tt.in, tt.opt)
 	if len(result) != len(tt.out) {
@@ -236,7 +236,7 @@ func testingUniqFunc(t *testing.T, tt struct {
 
 func TestUniq(t *testing.T) {
 	for index, tt := range uniqTestCases {
-		t.Run("case num"+strconv.Itoa(index) + " " + tt.testName, func(t *testing.T) {
+		t.Run("case num"+strconv.Itoa(index)+" "+tt.testName, func(t *testing.T) {
 			testingUniqFunc(t, tt)
 		})
 	}
