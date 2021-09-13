@@ -67,9 +67,9 @@ func TestElementaryOperations(t *testing.T) {
 	for _, cases := range tests {
 		for _, tt := range cases {
 			t.Run(tt.in, func(t *testing.T) {
-				val, err := Solve(tt.in)
+				val, err := solve(tt.in)
 				if err != nil {
-					t.Errorf("Something went wrong, error in solving elementary operations.")
+					t.Errorf("Something went wrong, error in solving elementary operations.\n Error: %s\n", err)
 				}
 				if diff := math.Abs(val - tt.out); diff > tolerance {
 					t.Errorf("Something went wrong, error in solving elementary operations\nExpected: %f\nGot: %f", tt.out, val)
@@ -92,9 +92,9 @@ var hardTests = []struct {
 func TestHardOperations(t *testing.T) {
 	for _, tt := range hardTests {
 		t.Run(tt.in, func(t *testing.T) {
-			val, err := Solve(tt.in)
+			val, err := solve(tt.in)
 			if err != nil {
-				t.Errorf("Something went wrong, error in solving elementary operations. Error: " + err.Error())
+				t.Errorf("Something went wrong, error in solving elementary operations. Error: %s\n", err)
 			}
 			require.Equal(t, tt.out, val, "Two numbers should be the same.")
 		})
@@ -117,7 +117,7 @@ var errorTests = []struct {
 func TestErrorInput(t *testing.T) {
 	for _, tt := range errorTests {
 		t.Run(tt.in, func(t *testing.T) {
-			_, err := Solve(tt.in)
+			_, err := solve(tt.in)
 			require.EqualError(t, err, tt.out.Error())
 		})
 	}

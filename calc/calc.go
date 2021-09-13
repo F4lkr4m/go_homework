@@ -6,35 +6,41 @@ import (
 	"unicode"
 )
 
-func Solve(input string) (result float64, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = r.(error)
-			return
-		}
-	}()
+func solve(input string) (result float64, err error) {
 	// clear input
 	input = strings.ReplaceAll(input, " ", "")
 	// split input
-	splittedInput := splitToOperands(input)
+	splittedInput, err := splitToOperands(input)
+	if err != nil {
+		return result, err
+	}
+
 	// get polish expression
-	polishExpression := convertToPolishSystem(splittedInput)
+	polishExpression, err := convertToPolishSystem(splittedInput)
+	if err != nil {
+		return result, err
+	}
 	// calculate
-	return countPolishSystem(polishExpression), nil
+	result, err = countPolishSystem(polishExpression)
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }
 
 // split string to []string with needed math operands and actions
-func splitToOperands(input string) (output []string) {
+func splitToOperands(input string) (output []string, err error) {
 	for i := 0; i < len(input); {
-		sign, increment, err := getNextOperand(input, i)
-		if err != nil {
-			panic(err)
+		sign, increment, r := getNextOperand(input, i)
+		if r != nil {
+			return output, r
 		}
 		output = append(output, sign)
 		i += increment
 	}
 
-	return output
+	return output, nil
 }
 
 // get next operand or action from input with the position
@@ -72,7 +78,7 @@ func reverseSlice(input []string) []string {
 }
 
 // converting to polish system func
-func convertToPolishSystem(input []string) (output []string) {
+func convertToPolishSystem(input []string) (output []string, err error) {
 	// stack for math operators
 	operatorStack := make([]string, 0)
 
@@ -106,7 +112,7 @@ func convertToPolishSystem(input []string) (output []string) {
 
 			switch {
 			case len(operatorStack) == 0:
-				panic(&ParsingExprError{})
+				return output, &ParsingExprError{}
 			default:
 				operatorStack = operatorStack[:len(operatorStack)-1]
 			}
@@ -118,11 +124,11 @@ func convertToPolishSystem(input []string) (output []string) {
 	operatorStack = reverseSlice(operatorStack)
 
 	output = append(output, operatorStack...)
-	return output
+	return output, nil
 }
 
 // counting func
-func countPolishSystem(input []string) (result float64) {
+func countPolishSystem(input []string) (result float64, err error) {
 	numberStack := make([]float64, 0)
 
 	for i := 0; i < len(input); i++ {
@@ -150,17 +156,17 @@ func countPolishSystem(input []string) (result float64) {
 				numberStack[len(numberStack)-1] -= val
 			case "*":
 				if len(numberStack) == 0 {
-					panic(&ParsingExprError{})
+					return result, &ParsingExprError{}
 				}
 
 				numberStack[len(numberStack)-1] *= val
 			case "/":
 				if len(numberStack) == 0 {
-					panic(&ParsingExprError{})
+					return result, &ParsingExprError{}
 				}
 
 				if val == 0 {
-					panic(&ZeroDivisionError{})
+					return result, &ZeroDivisionError{}
 				}
 				numberStack[len(numberStack)-1] = numberStack[len(numberStack)-1] / val
 			}
@@ -169,10 +175,10 @@ func countPolishSystem(input []string) (result float64) {
 			if s, err := strconv.ParseFloat(sign, 64); err == nil {
 				numberStack = append(numberStack, s)
 			} else {
-				panic(&ParsingExprError{})
+				return result, &ParsingExprError{}
 			}
 		}
 	}
 	// result will be in first cell
-	return numberStack[0]
+	return numberStack[0], nil
 }

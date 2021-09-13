@@ -19,7 +19,7 @@ func getArg() (out string) {
 }
 
 func SolveArgsExpression() error {
-	result, err := Solve(getArg())
+	result, err := solve(getArg())
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 )
 
 func main() {
-
 	err := calc.SolveArgsExpression()
 	if err != nil {
 		panic(err)
