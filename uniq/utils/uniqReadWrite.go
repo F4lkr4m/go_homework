@@ -2,10 +2,9 @@ package utils
 
 import (
 	"bufio"
-	"os"
 )
 
-func Read(buf *os.File) []string {
+func Read(buf *bufio.Reader) []string {
 	scanner := bufio.NewScanner(buf)
 	var result []string
 
@@ -16,12 +15,16 @@ func Read(buf *os.File) []string {
 	return result
 }
 
-func Write(buf *os.File, data []string) error {
+func Write(buf *bufio.Writer, data []string) error {
 	for _, item := range data {
 		_, err := buf.WriteString(item + "\n")
 		if err != nil {
 			return err
 		}
+	}
+	err := buf.Flush()
+	if err != nil {
+		return err
 	}
 	return nil
 }

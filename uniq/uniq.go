@@ -1,6 +1,7 @@
 package uniq
 
 import (
+	"bufio"
 	"go_homework/uniq/utils"
 	"os"
 	"strconv"
@@ -72,42 +73,45 @@ func Uniq(lines []string, opt utils.Options) (out []string) {
 }
 
 func UniqManager() error {
-	opt, err := utils.GetOptions()
-	if err != nil {
-		return err
+	opt := utils.GetOptions()
+	if opt == nil {
+		return &GetOptionsError{}
 	}
+
 	var result []string
 	var data []string
-	var inputStream *os.File
+	var inputReader *bufio.Reader
 	if opt.InputFilename == "" {
-		inputStream = os.Stdin
+		inputReader = bufio.NewReader(os.Stdin)
 	} else {
-		inputStream, err = os.Open(opt.InputFilename)
+		file, err := os.Open(opt.InputFilename)
 		if err != nil {
 			return &OpenFileError{opt.InputFilename}
 		}
-		defer inputStream.Close()
+		defer file.Close()
+		inputReader = bufio.NewReader(file)
 	}
 
-	data = utils.Read(inputStream)
+	data = utils.Read(inputReader)
 	// if no data, just return
 	if len(data) == 0 {
 		return nil
 	}
-	result = Uniq(data, opt)
+	result = Uniq(data, *opt)
 
-	var outputStream *os.File
+	var outputWriter *bufio.Writer
 	if opt.OutputFilename == "" {
-		outputStream = os.Stdout
+		outputWriter = bufio.NewWriter(os.Stdout)
 	} else {
-		outputStream, err = os.Open(opt.InputFilename)
+		file, err := os.Create(opt.OutputFilename)
 		if err != nil {
 			return &OpenFileError{opt.OutputFilename}
 		}
-
-		defer outputStream.Close()
+		defer file.Close()
+		outputWriter = bufio.NewWriter(file)
 	}
-	err = utils.Write(outputStream, result)
+
+	err := utils.Write(outputWriter, result)
 	if err != nil {
 		return err
 	}
