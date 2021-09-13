@@ -73,9 +73,9 @@ func Uniq(lines []string, opt utils.Options) (out []string) {
 }
 
 func UniqManager() error {
-	opt := utils.GetOptions()
-	if opt == nil {
-		return &GetOptionsError{}
+	opt, err := utils.GetOptions()
+	if err != nil {
+		return err
 	}
 
 	var result []string
@@ -97,7 +97,7 @@ func UniqManager() error {
 	if len(data) == 0 {
 		return nil
 	}
-	result = Uniq(data, *opt)
+	result = Uniq(data, opt)
 
 	var outputWriter *bufio.Writer
 	if opt.OutputFilename == "" {
@@ -111,7 +111,7 @@ func UniqManager() error {
 		outputWriter = bufio.NewWriter(file)
 	}
 
-	err := utils.Write(outputWriter, result)
+	err = utils.Write(outputWriter, result)
 	if err != nil {
 		return err
 	}

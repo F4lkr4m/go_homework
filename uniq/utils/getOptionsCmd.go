@@ -44,9 +44,7 @@ func getOptionalMode(c bool, d bool, u bool) Mode {
 	return None
 }
 
-func GetOptions() *Options {
-	options := Options{}
-
+func GetOptions() (options Options, err error) {
 	c := flag.Bool("c", false, "count the number of occurrences of lines in the input")
 	d := flag.Bool("d", false, "print only those lines that were repeated in the input data")
 	u := flag.Bool("u", false, "print only those lines that were not repeated in the input data")
@@ -63,7 +61,7 @@ func GetOptions() *Options {
 	options.WorkMode = getOptionalMode(*c, *d, *u)
 
 	if len(flag.Args()) > FileNum {
-		return nil
+		return options, &TooManyArgsError{}
 	}
 
 	// get filenames
@@ -76,8 +74,8 @@ func GetOptions() *Options {
 		options.InputFilename = flag.Args()[0]
 		options.OutputFilename = flag.Args()[1]
 	default:
-		return nil
+		return options, &TooManyArgsError{}
 	}
 
-	return &options
+	return options, nil
 }
