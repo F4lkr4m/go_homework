@@ -13,3 +13,9 @@ type ZeroDivisionError struct{}
 func (e *ZeroDivisionError) Error() string {
 	return fmt.Sprintf("Zero division\n")
 }
+
+type EmptyInputError struct{}
+
+func (e *EmptyInputError) Error() string {
+	return fmt.Sprintf("Empty input\n")
+}

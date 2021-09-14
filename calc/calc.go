@@ -6,35 +6,39 @@ import (
 	"unicode"
 )
 
-func solve(input string) (result float64, err error) {
+func solve(input string) (float64, error) {
+	if len(input) == 0 {
+		return 0, &EmptyInputError{}
+	}
 	// clear input
 	input = strings.ReplaceAll(input, " ", "")
 	// split input
 	splittedInput, err := splitToOperands(input)
 	if err != nil {
-		return result, err
+		return 0, err
 	}
 
 	// get polish expression
 	polishExpression, err := convertToPolishSystem(splittedInput)
 	if err != nil {
-		return result, err
+		return 0, err
 	}
 	// calculate
-	result, err = countPolishSystem(polishExpression)
+	result, err := calculatePolishSystem(polishExpression)
 	if err != nil {
-		return result, err
+		return 0, err
 	}
 
 	return result, nil
 }
 
 // split string to []string with needed math operands and actions
-func splitToOperands(input string) (output []string, err error) {
+func splitToOperands(input string) ([]string, error) {
+	var output []string
 	for i := 0; i < len(input); {
-		sign, increment, r := getNextOperand(input, i)
-		if r != nil {
-			return output, r
+		sign, increment, err := getNextOperand(input, i)
+		if err != nil {
+			return output, err
 		}
 		output = append(output, sign)
 		i += increment
@@ -50,8 +54,7 @@ func getNextOperand(input string, position int) (output string, increment int, e
 	// if sign is action
 	if strings.ContainsAny("()+-/*", string(sign)) {
 		output = output + string(sign)
-		increment++
-		return output, increment, nil
+		return output, 1, nil
 	}
 
 	// if sign is number
@@ -78,7 +81,7 @@ func reverseSlice(input []string) []string {
 }
 
 // converting to polish system func
-func convertToPolishSystem(input []string) (output []string, err error) {
+func convertToPolishSystem(input []string) ([]string, error) {
 	// stack for math operators
 	operatorStack := make([]string, 0)
 
@@ -86,6 +89,7 @@ func convertToPolishSystem(input []string) (output []string, err error) {
 	var priority = map[string]int{"*": 2, "/": 2, "-": 1, "+": 1, "(": 0, ")": 0}
 
 	// get every part of input and analyze it
+	var output []string
 	for i := 0; i < len(input); i++ {
 		sign := input[i]
 		switch {
@@ -99,23 +103,21 @@ func convertToPolishSystem(input []string) (output []string, err error) {
 			}
 			// add operand to stack
 			operatorStack = append(operatorStack, sign)
+
 		case string(sign) == "(":
 			operatorStack = append(operatorStack, sign)
 		case string(sign) == ")":
-			j := len(operatorStack) - 1
 			// drop signs until (
-			for ; j >= 0 && operatorStack[j] != "("; j-- {
+			for j := len(operatorStack) - 1; j >= 0 && operatorStack[j] != "("; j-- {
 				var dropSign string
 				operatorStack, dropSign = operatorStack[:len(operatorStack)-1], operatorStack[len(operatorStack)-1]
 				output = append(output, dropSign)
 			}
 
-			switch {
-			case len(operatorStack) == 0:
+			if len(operatorStack) == 0 {
 				return output, &ParsingExprError{}
-			default:
-				operatorStack = operatorStack[:len(operatorStack)-1]
 			}
+			operatorStack = operatorStack[:len(operatorStack)-1]
 		default:
 			output = append(output, sign)
 		}
@@ -128,7 +130,7 @@ func convertToPolishSystem(input []string) (output []string, err error) {
 }
 
 // counting func
-func countPolishSystem(input []string) (result float64, err error) {
+func calculatePolishSystem(input []string) (float64, error) {
 	numberStack := make([]float64, 0)
 
 	for i := 0; i < len(input); i++ {
@@ -145,39 +147,39 @@ func countPolishSystem(input []string) (result float64, err error) {
 					numberStack = append(numberStack, val)
 					continue
 				}
-
 				numberStack[len(numberStack)-1] += val
+
 			case "-":
 				if len(numberStack) == 0 {
 					numberStack = append(numberStack, -val)
 					continue
 				}
-
 				numberStack[len(numberStack)-1] -= val
+
 			case "*":
 				if len(numberStack) == 0 {
-					return result, &ParsingExprError{}
+					return 0, &ParsingExprError{}
 				}
-
 				numberStack[len(numberStack)-1] *= val
+
 			case "/":
 				if len(numberStack) == 0 {
-					return result, &ParsingExprError{}
+					return 0, &ParsingExprError{}
 				}
 
 				if val == 0 {
-					return result, &ZeroDivisionError{}
+					return 0, &ZeroDivisionError{}
 				}
 				numberStack[len(numberStack)-1] = numberStack[len(numberStack)-1] / val
 			}
-		} else {
-			// it is number -> add in number stack
-			if s, err := strconv.ParseFloat(sign, 64); err == nil {
-				numberStack = append(numberStack, s)
-			} else {
-				return result, &ParsingExprError{}
-			}
+			continue
 		}
+		// it is number -> add in number stack
+		s, err := strconv.ParseFloat(sign, 64)
+		if err != nil {
+			return 0, &ParsingExprError{}
+		}
+		numberStack = append(numberStack, s)
 	}
 	// result will be in first cell
 	return numberStack[0], nil
