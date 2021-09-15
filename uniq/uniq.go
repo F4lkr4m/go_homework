@@ -2,6 +2,7 @@ package uniq
 
 import (
 	"bufio"
+	"fmt"
 	"go_homework/uniq/utils"
 	"os"
 	"strconv"
@@ -11,12 +12,13 @@ import (
 func formatLineWithOptions(line string, opt utils.Options) string {
 	formattedLine := line
 
-	for i := 0; i < opt.FFields; i++ {
-		index := strings.IndexByte(line, ' ')
-		if index == -1 {
+	if opt.FFields > 0 {
+		separatedLine := strings.SplitN(line, " ", opt.FFields+1)
+		fmt.Println(separatedLine)
+		if len(separatedLine) < opt.FFields+1 {
 			return ""
 		}
-		formattedLine = line[index:]
+		formattedLine = " " + strings.Join(separatedLine[opt.FFields:], " ")
 	}
 
 	if len(formattedLine) <= opt.SChars {
@@ -32,21 +34,21 @@ func formatLineWithOptions(line string, opt utils.Options) string {
 }
 
 type lineWithCounter struct {
-	line    string
-	counter int
+	line          string
+	formattedLine string
+	counter       int
 }
 
 func Uniq(lines []string, opt utils.Options) (out []string) {
 	var countedLines []lineWithCounter
 
-	countedLines = append(countedLines, lineWithCounter{lines[0], 1})
+	countedLines = append(countedLines, lineWithCounter{lines[0], formatLineWithOptions(lines[0], opt), 1})
 
-	//for i := 1; i < len(lines); i++ {
 	for _, line := range lines[1:] {
-		if formatLineWithOptions(line, opt) == formatLineWithOptions(countedLines[len(countedLines)-1].line, opt) {
+		if formatLineWithOptions(line, opt) == countedLines[len(countedLines)-1].formattedLine {
 			countedLines[len(countedLines)-1].counter++
 		} else {
-			countedLines = append(countedLines, lineWithCounter{line, 1})
+			countedLines = append(countedLines, lineWithCounter{line, formatLineWithOptions(line, opt), 1})
 		}
 	}
 
@@ -72,6 +74,22 @@ func Uniq(lines []string, opt utils.Options) (out []string) {
 	return
 }
 
+func getInputData(inputFilename string) (data []string, err error) {
+	var inputReader *bufio.Reader
+	if inputFilename == "" {
+		inputReader = bufio.NewReader(os.Stdin)
+	} else {
+		file, err := os.Open(inputFilename)
+		if err != nil {
+			return data, &OpenFileError{inputFilename}
+		}
+		defer file.Close()
+		inputReader = bufio.NewReader(file)
+	}
+
+	return utils.Read(inputReader), nil
+}
+
 func UniqManager() error {
 	opt, err := utils.GetOptions()
 	if err != nil {
@@ -79,20 +97,12 @@ func UniqManager() error {
 	}
 
 	var result []string
-	var data []string
-	var inputReader *bufio.Reader
-	if opt.InputFilename == "" {
-		inputReader = bufio.NewReader(os.Stdin)
-	} else {
-		file, err := os.Open(opt.InputFilename)
-		if err != nil {
-			return &OpenFileError{opt.InputFilename}
-		}
-		defer file.Close()
-		inputReader = bufio.NewReader(file)
+
+	data, err := getInputData(opt.InputFilename)
+	if err != nil {
+		return err
 	}
 
-	data = utils.Read(inputReader)
 	// if no data, just return
 	if len(data) == 0 {
 		return nil
