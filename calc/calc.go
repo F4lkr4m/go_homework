@@ -65,7 +65,7 @@ func getNextOperand(input string, position int) (output string, increment int, e
 		}
 
 		if !unicode.IsDigit(rune(input[i])) {
-			return output, len(output), &ParsingExprError{}
+			return output, len(output), &NotNumberError{input}
 		}
 		output += string(input[i])
 	}
@@ -119,6 +119,9 @@ func convertToPolishSystem(input []string) ([]string, error) {
 			}
 			operatorStack = operatorStack[:len(operatorStack)-1]
 		default:
+			if _, err := strconv.ParseFloat(sign, 64); err != nil {
+				return output, &NotNumberError{sign}
+			}
 			output = append(output, sign)
 		}
 	}

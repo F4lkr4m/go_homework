@@ -107,7 +107,7 @@ var errorTests = []struct {
 }{
 	{"1 + 3 + (4 * (3 + (4 / 1))", &ParsingExprError{}},
 	{"1.2 + 3 + (4 * (3 + (4 / 1))))", &ParsingExprError{}},
-	{"Hello there", &ParsingExprError{}},
+	{"Hello there", &NotNumberError{"Hellothere"}},
 	{"* 3", &ParsingExprError{}},
 	{"/ 3", &ParsingExprError{}},
 	{"1 + 3 + (4 * (3 + (4 / 0)))", &ZeroDivisionError{}},
