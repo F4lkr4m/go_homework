@@ -3,6 +3,7 @@ package main
 import (
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -36,9 +37,7 @@ func singleHashWorker(outWg *sync.WaitGroup, outMu *sync.Mutex, input interface{
 	crcOne := <-crcOneChan
 	crcTwo := <-crcTwoChan
 
-	result := crcOne + "~" + crcTwo
-	out <- result
-
+	out <- crcOne + "~" + crcTwo
 }
 
 func SingleHash(in, out chan interface{}) {
@@ -76,22 +75,12 @@ func multiHashWorker(outWg *sync.WaitGroup, input interface{}, out chan interfac
 	wg.Wait()
 	close(elems)
 
-	var crcArray []orderedData
+	crcArray := make([]string, MultiHashTh)
 	for i := range elems {
-		crcArray = append(crcArray, i)
+		crcArray[i.orderNumber] = i.data
 	}
-
-	// sort data in order
-	sort.Slice(crcArray, func(i, j int) bool {
-		return crcArray[i].orderNumber < crcArray[j].orderNumber
-	})
-
 	// concat data
-	var result string
-	for i := 0; i < len(crcArray); i++ {
-		result += crcArray[i].data
-	}
-	out <- result
+	out <- strings.Join(crcArray, "")
 }
 
 func MultiHash(in, out chan interface{}) {
@@ -103,25 +92,13 @@ func MultiHash(in, out chan interface{}) {
 	localWg.Wait()
 }
 
-func sortAndConcatElementsInSlice(slice []string) string {
-	sort.Slice(slice, func(i, j int) bool {
-		return slice[i] < slice[j]
-	})
-
-	result := slice[0]
-	for i := 1; i < len(slice); i++ {
-		result += "_" + slice[i]
-	}
-	return result
-}
-
 func CombineResults(in, out chan interface{}) {
 	var resultSlice []string
 	for i := range in {
 		resultSlice = append(resultSlice, i.(string))
 	}
-
-	out <- sortAndConcatElementsInSlice(resultSlice)
+	sort.Strings(resultSlice)
+	out <- strings.Join(resultSlice, "_")
 }
 
 func executeJob(in, out chan interface{}, wg *sync.WaitGroup, job func(in, out chan interface{})) {
