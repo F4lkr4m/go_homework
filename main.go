@@ -1,9 +1,13 @@
-package go_homework
+package main
 
-import "fmt"
+import (
+	"go_homework/calc"
+)
 
 func main() {
-	fmt.Println("Hello world!");
-
+	err := calc.SolveArgsExpression()
+	if err != nil {
+		panic(err)
+	}
 	return
 }
