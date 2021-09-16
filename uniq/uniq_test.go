@@ -48,7 +48,11 @@ func TestFormattingLinesWithOptions(t *testing.T) {
 		t.Run(tt.in[0], func(t *testing.T) {
 			var result []string
 			for _, item := range tt.in {
-				result = append(result, formatLineWithOptions(item, tt.opt))
+				line, err := formatLineWithOptions(item, tt.opt)
+				if err != nil {
+					t.Fatalf("Unexpected err %s\n", err)
+				}
+				result = append(result, line)
 			}
 
 			if len(result) != len(tt.out) {
@@ -144,6 +148,8 @@ var uniqTestCases = []struct {
 			"I love music of Kartik.",
 			"We love music of Kartik.",
 			"Thanks.",
+			"hello  hell",
+			"hello hell",
 		},
 		out: []string{
 			"I love music.",
@@ -151,6 +157,7 @@ var uniqTestCases = []struct {
 			"I love music of Kartik.",
 			"We love music of Kartik.",
 			"Thanks.",
+			"hello  hell",
 		},
 	},
 	{
@@ -224,7 +231,10 @@ func testingUniqFunc(t *testing.T, tt struct {
 	in       []string
 	out      []string
 }) {
-	result := Uniq(tt.in, tt.opt)
+	result, err := Uniq(tt.in, tt.opt)
+	if err != nil {
+		t.Fatalf("Got err instead nil %s\n", err)
+	}
 	if len(result) != len(tt.out) {
 		t.Fatalf("Arrays not equal length result: %d out: %d", len(result), len(tt.out))
 	}

@@ -2,27 +2,34 @@ package uniq
 
 import (
 	"bufio"
-	"fmt"
 	"go_homework/uniq/utils"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-func formatLineWithOptions(line string, opt utils.Options) string {
+func formatLineWithOptions(line string, opt utils.Options) (string, error) {
+	if len(line) == 0 {
+		return "", nil
+	}
 	formattedLine := line
+	space, err := regexp.Compile(` +`)
+	if err != nil {
+		return "", err
+	}
+	formattedLine = space.ReplaceAllString(line, " ")
 
 	if opt.FFields > 0 {
-		separatedLine := strings.SplitN(line, " ", opt.FFields+1)
-		fmt.Println(separatedLine)
+		separatedLine := strings.SplitN(formattedLine, " ", opt.FFields+1)
 		if len(separatedLine) < opt.FFields+1 {
-			return ""
+			return "", nil
 		}
-		formattedLine = " " + strings.Join(separatedLine[opt.FFields:], " ")
+		formattedLine = " " + separatedLine[opt.FFields:][0]
 	}
 
 	if len(formattedLine) <= opt.SChars {
-		return ""
+		return "", nil
 	}
 	formattedLine = formattedLine[opt.SChars:]
 
@@ -30,7 +37,7 @@ func formatLineWithOptions(line string, opt utils.Options) string {
 		formattedLine = strings.ToLower(formattedLine)
 	}
 
-	return formattedLine
+	return formattedLine, nil
 }
 
 type lineWithCounter struct {
@@ -39,16 +46,24 @@ type lineWithCounter struct {
 	counter       int
 }
 
-func Uniq(lines []string, opt utils.Options) (out []string) {
+func Uniq(lines []string, opt utils.Options) (out []string, err error) {
 	var countedLines []lineWithCounter
 
-	countedLines = append(countedLines, lineWithCounter{lines[0], formatLineWithOptions(lines[0], opt), 1})
+	formattedFirstLine, err := formatLineWithOptions(lines[0], opt)
+	if err != nil {
+		return out, err
+	}
+	countedLines = append(countedLines, lineWithCounter{lines[0], formattedFirstLine, 1})
 
 	for _, line := range lines[1:] {
-		if formatLineWithOptions(line, opt) == countedLines[len(countedLines)-1].formattedLine {
+		formattedCurrentLine, err := formatLineWithOptions(line, opt)
+		if err != nil {
+			return out, err
+		}
+		if formattedCurrentLine == countedLines[len(countedLines)-1].formattedLine {
 			countedLines[len(countedLines)-1].counter++
 		} else {
-			countedLines = append(countedLines, lineWithCounter{line, formatLineWithOptions(line, opt), 1})
+			countedLines = append(countedLines, lineWithCounter{line, formattedCurrentLine, 1})
 		}
 	}
 
@@ -67,11 +82,11 @@ func Uniq(lines []string, opt utils.Options) (out []string) {
 				out = append(out, item.line)
 			}
 		case utils.Empty:
-			return
+			return out, &ArgsError{}
 		}
 	}
 
-	return
+	return out, nil
 }
 
 func getInputData(inputFilename string) (data []string, err error) {
@@ -88,6 +103,26 @@ func getInputData(inputFilename string) (data []string, err error) {
 	}
 
 	return utils.Read(inputReader), nil
+}
+
+func writeResultData(data []string, outputFilename string) error {
+	var outputWriter *bufio.Writer
+	if outputFilename == "" {
+		outputWriter = bufio.NewWriter(os.Stdout)
+	} else {
+		file, err := os.Create(outputFilename)
+		if err != nil {
+			return &OpenFileError{outputFilename}
+		}
+		defer file.Close()
+		outputWriter = bufio.NewWriter(file)
+	}
+
+	err := utils.Write(outputWriter, data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func UniqManager() error {
@@ -107,23 +142,14 @@ func UniqManager() error {
 	if len(data) == 0 {
 		return nil
 	}
-	result = Uniq(data, opt)
-
-	var outputWriter *bufio.Writer
-	if opt.OutputFilename == "" {
-		outputWriter = bufio.NewWriter(os.Stdout)
-	} else {
-		file, err := os.Create(opt.OutputFilename)
-		if err != nil {
-			return &OpenFileError{opt.OutputFilename}
-		}
-		defer file.Close()
-		outputWriter = bufio.NewWriter(file)
-	}
-
-	err = utils.Write(outputWriter, result)
+	result, err = Uniq(data, opt)
 	if err != nil {
 		return err
 	}
+	err = writeResultData(result, opt.OutputFilename)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
