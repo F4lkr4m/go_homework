@@ -2,6 +2,8 @@ package uniq
 
 import (
 	"bufio"
+	"fmt"
+	"github.com/pkg/errors"
 	"go_homework/uniq/utils"
 	"os"
 	"regexp"
@@ -148,7 +150,8 @@ func UniqManager() error {
 	}
 	err = writeResultData(result, opt.OutputFilename)
 	if err != nil {
-		return err
+		errorMessage := fmt.Sprintf("Write result data error. Filepath: %s\n", opt.OutputFilename)
+		return errors.Wrap(err, errorMessage)
 	}
 
 	return nil
