@@ -1,9 +1,11 @@
-package go_homework
+package main
 
-import "fmt"
+import "go_homework/uniq"
 
 func main() {
-	fmt.Println("Hello world!");
-
+	err := uniq.UniqManager()
+	if err != nil {
+		panic(err)
+	}
 	return
 }
